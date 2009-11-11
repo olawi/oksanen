@@ -26,16 +26,13 @@ class Writer():
         if self.curdate != date:
             self.output += "%s - " %date
             self.curdate = date
-        self.output += "%s - "%event
+        self.output += "%s"%event
         if place:
-            self.output += "%s - "%place
+            self.output += " - %s"%place
         if price:
-            self.output += "%s e"%price 
+            self.output += " - %s e"%price 
         if self.count != 5:
             self.output += " | "  
-
-    def dump(self):
-        self.tree.write(sys.stdout)
 
 class Parser(htmllib.HTMLParser):
     def __init__(self, writer, verbose=0):

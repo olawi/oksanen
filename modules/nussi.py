@@ -7,9 +7,10 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 import random
 
 nusphrases = [ r"%s: %s olis vailla!", 
-               r"%s: körmyyttele vaikka %s:ta",
+               r"%s: paneskele vaikka %s:ta.",
                r"%s: %s on kuulemma kova panemaan!",
-               r"%s: %s on puutteessa" ]
+               r"%s: %s on puutteessa.",
+               r"%s: %s kaipais miurautusta!"]
 
 def nussi(self, e, c):
     """ NUSNUS """
@@ -21,7 +22,9 @@ def nussi(self, e, c):
             users = chobj.users()
 
             fuckee = users[random.randint(0,len(users)-1)]
-
-            c.privmsg(e.target(), nusphrases[random.randint(0, len(nusphrases)-1)]%(nick, fuckee))
+            if fuckee == nick:
+                c.privmsg(e.target(), "%s: fap fap fap fap fap fap FAP *GNUT*!"%nick)
+            else:
+                c.privmsg(e.target(), nusphrases[random.randint(0, len(nusphrases)-1)]%(nick, fuckee))
 
 nussi.commands = ['nussi']

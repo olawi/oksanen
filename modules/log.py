@@ -15,6 +15,9 @@ def log(self, e, c):
         cursor = self.db.cursor()
         
         command = """INSERT INTO log (USER, ENTRY) VALUES (%s, %s); """
+
+        # Parametrized input should take care of SQL injection
+
         cursor.execute(command, [nick, target] )
 
         c.privmsg(e.target(), "Little Bobby tables <3")

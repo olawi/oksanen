@@ -4,7 +4,15 @@
 # Oksanen!
 #
 
-import os
+import os, random
+
+babble = [ r"%s: Ei tänään, ei ehkä koskaan",
+           r"%s: Vielä on 6 viikkoa porttikieltoa jäljellä",
+           r"%s: Kerroppa omin sanoin miksi olet siinä etkä tuolla jonon perällä?",
+           r"%s: Hehe mikä variksenpelätin se sinäki olet",
+           r"%s: Narikkamaksu on pakollinen",
+           r"%s: Ei omia juomia. Ulos.",
+           r"%s: Siellä sisällä on vain jotain saatanan lökäpöksyjä tänään. Ei kannata tulla." ]
 
 """A simple example bot.
 
@@ -45,6 +53,8 @@ class Oksanen(SingleServerIRCBot):
         self.channel = channel
         self.variables = {}
         self.setup()
+        self.nickname = nickname
+
         print self.variables
 
     def setup(self):
@@ -87,12 +97,20 @@ class Oksanen(SingleServerIRCBot):
     def on_privmsg(self, c, e):
         self.do_command(e, e.arguments()[0])
 
+    def do_babble(self, c, e):
+        nick = nm_to_n(e.source())
+        c = self.connection
+        print "BABBLEEE!"
+        c.privmsg(e.target(), babble[random.randint(0, len(babble)-1)]%nick)
+
     def on_pubmsg(self, c, e):
-        a = e.arguments()[0].split(":", 1)
-        if e.arguments()[0][0] == "!":
+        line = e.arguments()[0]
+        a = line.split(":", 1)
+
+        if line[0] == "!":
             self.do_pubcommand(e)
-        elif len(a) > 1 and irc_lower(a[0]) == irc_lower(self.connection.get_nickname()):
-            self.do_command(e, a[1].strip())
+        elif len(line) > 1 and line.lower().find(self.nickname.lower()) !=-1:
+            self.do_babble(c, e)
         return
 
     def on_dccmsg(self, c, e):

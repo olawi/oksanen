@@ -6,6 +6,8 @@
 
 import os, random
 
+import MySQLdb
+
 babble = [ r"%s: Ei tänään, ei ehkä koskaan",
            r"%s: Vielä on 6 viikkoa porttikieltoa jäljellä",
            r"%s: Kerroppa omin sanoin miksi olet siinä etkä tuolla jonon perällä?",
@@ -54,11 +56,12 @@ def is_admin(nick):
         return False
 
 class Oksanen(SingleServerIRCBot):
-    def __init__(self, channel, nickname, server, port=6667):
+    def __init__(self, channel, nickname, server, port, sqlparams):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.channel = channel
         self.setup()
         self.nickname = nickname
+        self.db = MySQLdb.connect(host=sqlparams[0], user=sqlparams[1], passwd=sqlparams[2], db = sqlparams[3])
 
         print self.variables
 
@@ -107,7 +110,6 @@ class Oksanen(SingleServerIRCBot):
     def do_babble(self, c, e):
         nick = nm_to_n(e.source())
         c = self.connection
-        print "BABBLEEE!"
         c.privmsg(e.target(), babble[random.randint(0, len(babble)-1)]%nick)
 
     def on_pubmsg(self, c, e):
@@ -145,7 +147,6 @@ class Oksanen(SingleServerIRCBot):
             cmd = parts[0].lower()
             try:
                 func=self.variables[cmd]
-                print func
                 func(self, e, c)
             except Exception, e:
                 print "ERROR: %s"%e
@@ -158,7 +159,6 @@ class Oksanen(SingleServerIRCBot):
 
         # for now
         if is_admin(nick) and cmd == "reload":
-            print "setup"
             self.setup()
             
         elif cmd == "stats":
@@ -193,9 +193,14 @@ def main():
     if len(args) != 1:
         print "Usage: oksanen -s server -p port -n nick channel"
         sys.exit(1)
+    
+    mysqlargs = []
+    fd = open(".mysqlpw")
+    for i in fd.readlines():
+        mysqlargs.append(i.strip())
+    fd.close()
 
-        
-    bot = Oksanen(args[0], options.nick, options.server, int(options.port))
+    bot = Oksanen(args[0], options.nick, options.server, int(options.port), mysqlargs)
     bot.start()
 
 if __name__ == "__main__":

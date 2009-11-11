@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# coding=utf-8
 #
 # Oksanen!
 #
@@ -27,6 +28,12 @@ The known commands are:
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 
+DEBUG=1
+
+def debug(text):
+    if DEBUG==1:
+        print text
+
 class Oksanen(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
@@ -43,7 +50,9 @@ class Oksanen(SingleServerIRCBot):
 
     def on_pubmsg(self, c, e):
         a = e.arguments()[0].split(":", 1)
-        if len(a) > 1 and irc_lower(a[0]) == irc_lower(self.connection.get_nickname()):
+        if e.arguments()[0][0] == "!":
+            self.do_pubcommand(e)
+        elif len(a) > 1 and irc_lower(a[0]) == irc_lower(self.connection.get_nickname()):
             self.do_command(e, a[1].strip())
         return
 
@@ -61,6 +70,18 @@ class Oksanen(SingleServerIRCBot):
             except ValueError:
                 return
             self.dcc_connect(address, port)
+
+    def do_pubcommand(self, e):
+        nick = nm_to_n(e.source())
+        c = self.connection
+        
+        line = e.arguments()[0]
+        if line[0] == "!":
+            parts = line[1:].split()
+# Make modular
+            if parts[0].lower() == "nussi":
+                c.privmsg(e.target(), r"%s: Joojoo eläpä rupia"%nick)
+
 
     def do_command(self, e, cmd):
         nick = nm_to_n(e.source())
@@ -93,24 +114,23 @@ class Oksanen(SingleServerIRCBot):
 
 def main():
     import sys
-    if len(sys.argv) != 4:
-        print "Usage: oksanen <server[:port]> <channel> <nickname>"
+    from optparse import OptionParser
+
+    parser = OptionParser()
+    parser.add_option("-s", "--server", dest="server",
+                      help="server", default="irc6.datanet.ee")
+    parser.add_option("-p", "--port", dest="port",
+                      help="port", default="6667")
+    parser.add_option("-n", "--nick", dest="nick",
+                      help="nick", default="Oksanen")
+    ( options, args ) = parser.parse_args()
+
+    if len(args) != 1:
+        print "Usage: oksanen -s server -p port -n nick channel"
         sys.exit(1)
 
-    s = sys.argv[1].split(":", 1)
-    server = s[0]
-    if len(s) == 2:
-        try:
-            port = int(s[1])
-        except ValueError:
-            print "Error: Erroneous port."
-            sys.exit(1)
-    else:
-        port = 6667
-    channel = sys.argv[2]
-    nickname = sys.argv[3]
-
-    bot = Oksanen(channel, nickname, server, port)
+        
+    bot = Oksanen(args[0], options.nick, options.server, int(options.port))
     bot.start()
 
 if __name__ == "__main__":

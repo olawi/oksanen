@@ -47,18 +47,25 @@ def debug(text):
     if DEBUG==1:
         print text
 
+def is_admin(nick):
+    if nick == "mossman":
+        return True
+    else:
+        return False
+
 class Oksanen(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.channel = channel
-        self.variables = {}
         self.setup()
         self.nickname = nickname
 
         print self.variables
 
     def setup(self):
+        self.variables = {}
         filenames = []
+
         for fn in os.listdir(os.path.join(home, 'modules')): 
             if (fn[-2:] == "py"):
                 filenames.append(os.path.join(home, 'modules', fn ))
@@ -149,11 +156,12 @@ class Oksanen(SingleServerIRCBot):
         nick = nm_to_n(e.source())
         c = self.connection
 
-#        if cmd == "disconnect":
-#            self.disconnect()
-#        elif cmd == "die":
-#            self.die()
-        if cmd == "stats":
+        # for now
+        if is_admin(nick) and cmd == "reload":
+            print "setup"
+            self.setup()
+            
+        elif cmd == "stats":
             for chname, chobj in self.channels.items():
                 c.notice(nick, "--- Channel statistics ---")
                 c.notice(nick, "Channel: " + chname)

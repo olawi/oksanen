@@ -4,6 +4,8 @@
 # Oksanen!
 #
 
+import os
+
 """A simple example bot.
 
 This is an example bot that uses the SingleServerIRCBot class from
@@ -27,6 +29,9 @@ The known commands are:
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
+import sys, imp
+
+home = os.getcwd()
 
 DEBUG=1
 
@@ -38,6 +43,40 @@ class Oksanen(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.channel = channel
+        self.variables = {}
+        self.setup()
+        print self.variables
+
+    def setup(self):
+        filenames = []
+        for fn in os.listdir(os.path.join(home, 'modules')): 
+            if (fn[-2:] == "py"):
+                filenames.append(os.path.join(home, 'modules', fn ))
+        
+        modules = []
+        for filename in filenames: 
+            name = os.path.basename(filename)[:-3]
+
+            try: 
+                module = imp.load_source(name, filename)
+            except Exception, e: 
+                print >> sys.stderr, "Error loading %s: %s (in oksanen.py)" % (name, e)
+            else: 
+                if hasattr(module, 'setup'): 
+                    module.setup(self)
+                self.register(vars(module))
+                modules.append(name)
+
+            if modules: 
+                print >> sys.stderr, 'Registered modules:', ', '.join(modules)
+            else: 
+                print >> sys.stderr, "Warning: Couldn't find any modules"
+
+    def register(self, variables): 
+        # This is used by reload.py, hence it being methodised
+        for name, obj in variables.iteritems(): 
+            if hasattr(obj, 'commands') or hasattr(obj, 'rule'): 
+                self.variables[name] = obj
 
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
@@ -76,22 +115,27 @@ class Oksanen(SingleServerIRCBot):
         c = self.connection
         
         line = e.arguments()[0]
-        if line[0] == "!":
+        if line[0] == "!" and len(line)>1:
             parts = line[1:].split()
-# Make modular
-            if parts[0].lower() == "nussi":
-                c.privmsg(e.target(), r"%s: Joojoo eläpä rupia"%nick)
+            cmd = parts[0].lower()
+            try:
+                func=self.variables[cmd]
+                print func
+                func(self, e, c)
+            except Exception, e:
+                print "ERROR: %s"%e
+
 
 
     def do_command(self, e, cmd):
         nick = nm_to_n(e.source())
         c = self.connection
 
-        if cmd == "disconnect":
-            self.disconnect()
-        elif cmd == "die":
-            self.die()
-        elif cmd == "stats":
+#        if cmd == "disconnect":
+#            self.disconnect()
+#        elif cmd == "die":
+#            self.die()
+        if cmd == "stats":
             for chname, chobj in self.channels.items():
                 c.notice(nick, "--- Channel statistics ---")
                 c.notice(nick, "Channel: " + chname)
@@ -104,13 +148,8 @@ class Oksanen(SingleServerIRCBot):
                 voiced = chobj.voiced()
                 voiced.sort()
                 c.notice(nick, "Voiced: " + ", ".join(voiced))
-        elif cmd == "dcc":
-            dcc = self.dcc_listen()
-            c.ctcp("DCC", nick, "CHAT chat %s %d" % (
-                ip_quad_to_numstr(dcc.localaddress),
-                dcc.localport))
         else:
-            c.notice(nick, "Not understood: " + cmd)
+            c.notice(nick, "En tajua: " + cmd)
 
 def main():
     import sys

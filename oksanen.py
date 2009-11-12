@@ -5,8 +5,11 @@
 #
 
 import os, random
-
-import MySQLdb
+try:
+    import MySQLdb
+    hasSql = True
+except Exception, e:
+    hasSql = False
 
 babble = [ r"%s: Ei tänään, ei ehkä koskaan",
            r"%s: Vielä on 6 viikkoa porttikieltoa jäljellä",
@@ -61,7 +64,8 @@ class Oksanen(SingleServerIRCBot):
         self.channel = channel
         self.setup()
         self.nickname = nickname
-        self.db = MySQLdb.connect(host=sqlparams[0], user=sqlparams[1], passwd=sqlparams[2], db = sqlparams[3])
+        if hasSql:
+            self.db = MySQLdb.connect(host=sqlparams[0], user=sqlparams[1], passwd=sqlparams[2], db = sqlparams[3])
 
         print self.variables
 
@@ -193,12 +197,14 @@ def main():
     if len(args) != 1:
         print "Usage: oksanen -s server -p port -n nick channel"
         sys.exit(1)
-    
+
     mysqlargs = []
-    fd = open(".mysqlpw")
-    for i in fd.readlines():
-        mysqlargs.append(i.strip())
-    fd.close()
+
+    if hasSql:
+        fd = open(".mysqlpw")
+        for i in fd.readlines():
+            mysqlargs.append(i.strip())
+        fd.close()
 
     bot = Oksanen(args[0], options.nick, options.server, int(options.port), mysqlargs)
     bot.start()

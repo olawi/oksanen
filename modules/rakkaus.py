@@ -9,6 +9,7 @@ import string
 
 def setup(self):
     self.commands['rakkaus'] = rakkaus
+    self.commands['love'] = rakkaus
 
 def rakkaus(self, e, c):
     nick = nm_to_n(e.source())

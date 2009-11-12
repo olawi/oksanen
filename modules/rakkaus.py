@@ -7,9 +7,11 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 import hashlib
 import string
 
+def setup(self):
+    self.commands['rakkaus'] = rakkaus
+
 def rakkaus(self, e, c):
     nick = nm_to_n(e.source())
-    c = self.connection
 
     line = e.arguments()[0]
     target = string.join(line.split()[1:], " ")
@@ -23,5 +25,3 @@ def rakkaus(self, e, c):
             score += ord(digest[i])
 
         c.privmsg(e.target(), "%s <3 %s: %d%%"%(nick, target, score % 101))
-
-rakkaus.commands = ['rakkaus']

@@ -4,20 +4,13 @@
 # Oksanen!
 #
 
-import os, random
+import os
 try:
     import MySQLdb
     hasSql = True
 except Exception, e:
     hasSql = False
 
-babble = [ r"%s: Ei tänään, ei ehkä koskaan",
-           r"%s: Vielä on 6 viikkoa porttikieltoa jäljellä",
-           r"%s: Kerroppa omin sanoin miksi olet siinä etkä tuolla jonon perällä?",
-           r"%s: Hehe mikä variksenpelätin se sinäki olet",
-           r"%s: Narikkamaksu on pakollinen",
-           r"%s: Ei omia juomia. Ulos.",
-           r"%s: Siellä sisällä on vain jotain saatanan lökäpöksyjä tänään. Ei kannata tulla." ]
 
 """A simple example bot.
 
@@ -63,14 +56,18 @@ class Oksanen(SingleServerIRCBot):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.channel = channel
         self.setup()
+        print self.commands
+        print self.pubhandlers
+
         self.nickname = nickname
+
         if hasSql:
             self.db = MySQLdb.connect(host=sqlparams[0], user=sqlparams[1], passwd=sqlparams[2], db = sqlparams[3])
 
-        print self.variables
-
     def setup(self):
-        self.variables = {}
+        self.commands = {}
+        self.pubhandlers = []
+
         filenames = []
 
         for fn in os.listdir(os.path.join(home, 'modules')): 
@@ -88,19 +85,13 @@ class Oksanen(SingleServerIRCBot):
             else: 
                 if hasattr(module, 'setup'): 
                     module.setup(self)
-                self.register(vars(module))
+
                 modules.append(name)
 
-            if modules: 
-                print >> sys.stderr, 'Registered modules:', ', '.join(modules)
-            else: 
-                print >> sys.stderr, "Warning: Couldn't find any modules"
-
-    def register(self, variables): 
-        # This is used by reload.py, hence it being methodised
-        for name, obj in variables.iteritems(): 
-            if hasattr(obj, 'commands') or hasattr(obj, 'rule'): 
-                self.variables[name] = obj
+        if modules: 
+            print >> sys.stderr, 'Registered modules:', ', '.join(modules)
+        else: 
+            print >> sys.stderr, "Warning: Couldn't find any modules"
 
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
@@ -111,19 +102,19 @@ class Oksanen(SingleServerIRCBot):
     def on_privmsg(self, c, e):
         self.do_command(e, e.arguments()[0])
 
-    def do_babble(self, c, e):
-        nick = nm_to_n(e.source())
-        c = self.connection
-        c.privmsg(e.target(), babble[random.randint(0, len(babble)-1)]%nick)
 
     def on_pubmsg(self, c, e):
+        for func in self.pubhandlers:
+            try:
+                func(self, e, c)
+            except Exception, ex:
+                print "ERROR: %s"%ex
+
         line = e.arguments()[0]
         a = line.split(":", 1)
 
         if line[0] == "!":
             self.do_pubcommand(e)
-        elif len(line) > 1 and line.lower().find(self.nickname.lower()) !=-1:
-            self.do_babble(c, e)
         return
 
     def on_dccmsg(self, c, e):
@@ -150,12 +141,10 @@ class Oksanen(SingleServerIRCBot):
             parts = line[1:].split()
             cmd = parts[0].lower()
             try:
-                func=self.variables[cmd]
+                func = self.commands[cmd]
                 func(self, e, c)
             except Exception, e:
                 print "ERROR: %s"%e
-
-
 
     def do_command(self, e, cmd):
         nick = nm_to_n(e.source())

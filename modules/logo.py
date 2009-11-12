@@ -4,9 +4,11 @@
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
+def setup(self):
+    self.commands['logo'] = logo
+
 def logo(self, e, c):
     nick = nm_to_n(e.source())
-    c = self.connection
 
     line = e.arguments()[0]
     target = "".join(line.split()[1:])
@@ -19,5 +21,3 @@ def logo(self, e, c):
         c.privmsg(e.target(), "*  ||----||")
         c.privmsg(e.target(), "   ^^    ^^")
 
-
-logo.commands = ['logo']

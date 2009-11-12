@@ -12,10 +12,12 @@ nusphrases = [ r"%s: %s olis vailla!",
                r"%s: %s on puutteessa.",
                r"%s: %s kaipais miurautusta!"]
 
+def setup(self):
+    self.commands['nussi'] = nussi
+
 def nussi(self, e, c):
     """ NUSNUS """
     nick = nm_to_n(e.source())
-    c = self.connection
 
     for chname, chobj in self.channels.items():
         if e.target() == chname:
@@ -26,5 +28,3 @@ def nussi(self, e, c):
                 c.privmsg(e.target(), "%s: fap fap fap fap fap fap FAP *GNUT*!"%nick)
             else:
                 c.privmsg(e.target(), nusphrases[random.randint(0, len(nusphrases)-1)]%(nick, fuckee))
-
-nussi.commands = ['nussi']

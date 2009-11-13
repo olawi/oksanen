@@ -13,6 +13,7 @@ from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
 quotes = []
+quote_url = "http://www.quotationspage.com/search.php3?homesearch="
 
 class parser(htmllib.HTMLParser):
 
@@ -35,7 +36,6 @@ class parser(htmllib.HTMLParser):
         
 def setup(self):
     self.commands['quote'] = quote
-    self.url = "http://www.quotationspage.com/search.php3?homesearch="
 
 def quote(self,e,c):
 
@@ -46,7 +46,7 @@ def quote(self,e,c):
     quotes = []
 
     while 1:
-        fd = urllib.urlopen("%s%s&page=%d"%(self.url,query,pg))
+        fd = urllib.urlopen("%s%s&page=%d"%(quote_url,query,pg))
         page = fd.read()
         fd.close
 

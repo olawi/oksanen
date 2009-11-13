@@ -14,6 +14,13 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
 quotes = []
 quote_url = "http://www.quotationspage.com/search.php3?homesearch="
+quote_nfm = [ "ei se kaveri ole koskaan sanonut mit‰‰n j‰rkev‰‰",
+              "en m‰ nyt kuule jaksa. Googlaa itte?",
+              "kuka se semmonen muka on?",
+              "koskaan kuullukkaan koko tyypist‰!",
+              "ei mun tietokannassa nyt ihan jokaista ole joka on joskus jotakin suustaan p‰‰st‰nyt."
+              ]
+
 
 class parser(htmllib.HTMLParser):
 
@@ -63,7 +70,7 @@ def quote(self,e,c):
 
     if len(quotes) < 1:
         nick = nm_to_n(e.source())
-        c.privmsg(e.target(), "%s, ei se kaveri ole koskaan sanonut mit‰‰n j‰rkev‰‰."%nick)
+        c.privmsg(e.target(), "%s, %s"%(nick,random.choice(quote_nfm)))
         return
 
     messu = re.sub("\[\d+\]\s?$","",random.choice(quotes))

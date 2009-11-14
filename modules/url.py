@@ -3,7 +3,8 @@
 
 import re
 import string
-import urllib
+
+from urllib import FancyURLopener
 from sgmllib import SGMLParser
 
 from ircbot import SingleServerIRCBot
@@ -31,6 +32,9 @@ class parser(SGMLParser):
         self.title = string.join(self.title.split(),' ')
         self.buf = ""
 
+class opener(FancyURLopener):
+    version = 'Lynx/2.8.5rel.1 libwww-FM/2.14 SSL-MM/1.4.1 GNUTLS/1.2.9'
+
 def setup(self):
     self.pubhandlers.append(urlhandler)
 
@@ -49,9 +53,12 @@ def urlhandler(self, e, c):
     if re.match('www.',uri):
         uri = re.sub('^www.','http://www.',uri)
 
+    opr = opener()
+
     try:
-        fd = urllib.urlopen(uri)
+        fd = opr.open(uri)
     except:
+        print "url.py: FAIL opening %s"%uri
         return
     
     page = fd.read()

@@ -12,14 +12,14 @@ threesome = [ r"%s ja %s pistää %s:n vartaaseen",
               r"%s, %s ja %s nussiivat",
               r"%s panee eestä ja %s pakee takaa, %s könnissä paikallaan makaa!" ]
 
-fourway = [ r"On %s ottanut prestoja, ei tunne estoja, %s katsoo ja runkkaa kun %s ja %s heiluttaa punkkaa!",
-            r"Luostarissa rytisee kun munkki %s saapuu paikalle moikkaamaan nunnia %s, %s ja %s" ]
+fourway = [ r"On %s ottanut prestoja, ei tunne estoja, %s katsoo ja runkkaa kun %s ja %s heiluttaa punkkaa!",
+            r"% js %s körmyyttää ja %s ja %s päättävät liittyä seuraan!" ]
 
 
 def setup(self):
-    self.commands['nussi'] = nussi
+    self.commands['orgiat'] = orgiat
 
-def nussi(self, e, c):
+def orgiat(self, e, c):
     """ NUSNUS """
     nick = nm_to_n(e.source())
 
@@ -28,7 +28,7 @@ def nussi(self, e, c):
             users = chobj.users()
 
             if random.randint(0,1) == 0:
-                    c.privmsg(e.target(), threesome%(random.choice(users),random.choice(users),random.choice(users))
+                c.privmsg(e.target(), random.choice(threesome)%(random.choice(users),random.choice(users),random.choice(users)))
             else:
-                    c.privmsg(e.target(), fourway%(random.choice(users),random.choice(users),random.choice(users),random.choice(users))
+                c.privmsg(e.target(), random.choice(fourway)%(random.choice(users),random.choice(users),random.choice(users),random.choice(users)))
                 

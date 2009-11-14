@@ -58,6 +58,7 @@ class Oksanen(SingleServerIRCBot):
         self.setup()
         print self.commands
         print self.pubhandlers
+        print self.joinhandlers
 
         self.nickname = nickname
 
@@ -67,6 +68,7 @@ class Oksanen(SingleServerIRCBot):
     def setup(self):
         self.commands = {}
         self.pubhandlers = []
+        self.joinhandlers = []
 
         filenames = []
 
@@ -99,9 +101,15 @@ class Oksanen(SingleServerIRCBot):
     def on_welcome(self, c, e):
         c.join(self.channel)
 
+    def on_join(self, c , e):
+        for func in self.joinhandlers:
+            try:
+                func(self, e, c)
+            except Exception, ex:
+                print "ERROR: %s"%ex
+
     def on_privmsg(self, c, e):
         self.do_command(e, e.arguments()[0])
-
 
     def on_pubmsg(self, c, e):
         for func in self.pubhandlers:

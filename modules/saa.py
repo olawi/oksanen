@@ -6,11 +6,37 @@ import htmllib
 import formatter
 
 import string
+import time
+import random
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n
 
 saa_url = "http://weather.willab.fi/weather.html"
+
+saa_qrep = [
+    "Pit‰‰kˆ se yhten‰‰n olla sit‰ s‰‰t‰kin utelemassa?",
+    "En min‰ mik‰‰n liikkuva s‰‰asema ole?",
+    "N‰yt‰nkˆ min‰ sinusta Juha Fˆhrilt‰? H‰h?",
+    "RAUHOTTUKAAPA!",
+    "Mik‰ ihme siin‰ on ettei ihmisi‰ muu kiinnosta?"
+    ]
+
+saa_orep = [
+    "VTT:n Jari tuumailee ett‰ Oulussa on l‰mmint‰ palttiarallaa",
+    "Oulussa",
+    "Teknillisen tutkimuskeskuksen ihmeellinen laitteisto kertoo ett‰ Oulusa",
+    "Ai m‰‰ vai? Oulussa on",
+    "Teknologiakyl‰n katolla ainaki on "
+    ]
+
+saa_mrep = [
+    "Vitut min‰ siit‰ tied‰n tai v‰lit‰n, mutta Oulussa on",
+    "Ai jossain per‰hiki‰ll‰? Mit‰ v‰li‰! Oulussa on",
+    "Miss‰? T‰‰ll‰ on ainaki",
+    "En kuule tied‰. Mit‰ s‰ siell‰ teet? Oulussa on",
+    "Otappa ihan itte kuule selv‰‰. Oulussa on"
+    ]
 
 class parser(htmllib.HTMLParser):
     
@@ -33,8 +59,11 @@ class parser(htmllib.HTMLParser):
             
 def setup(self):
     self.commands['s‰‰'] = saa
-
+    saa.timelast = time.time()
+    
 def saa(self,e,c):
+
+    saa.timenow = time.time()
     
     line = e.arguments()[0]
     
@@ -46,10 +75,16 @@ def saa(self,e,c):
     p.feed(page)
     
     c = self.connection
-    
-    if len(line.split()[1:]) < 1:
-        c.privmsg(e.target(),"VTT:n Jari tuumailee ett‰ Oulussa on l‰mmint‰ palttiarallaa %s"%p.output)
-    else:
-        c.privmsg(e.target(),"Vitut min‰ siit‰ tied‰n tai v‰lit‰n, mutta Oulussa on %s"%p.output)
 
-    
+    if len(line.split()[1:]) < 1:
+        messu = random.choice(saa_orep)
+    else:
+        messu = random.choice(saa_mrep)
+
+    if (saa.timenow - saa.timelast) < 3:
+        messu = random.choice(saa_qrep)
+        p.output = ""
+
+    c.privmsg(e.target(),"%s %s"%(messu,p.output)) 
+
+    saa.timelast = saa.timenow

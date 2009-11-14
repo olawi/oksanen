@@ -69,6 +69,8 @@ class Oksanen(SingleServerIRCBot):
         self.commands = {}
         self.pubhandlers = []
         self.joinhandlers = []
+        self.whoisinfo = {}
+        self.whoiscallbacks = []
 
         filenames = []
 
@@ -140,6 +142,27 @@ class Oksanen(SingleServerIRCBot):
                 return
             self.dcc_connect(address, port)
 
+    # WHOIS
+    def on_whoisuser(self, c, e):
+        self.whoisinfo['user'] = e.arguments()
+
+    def on_whoischannels(self, c, e):
+        self.whoisinfo['channels'] = e.arguments()
+
+    def on_whoisserver(self, c ,e):
+        self.whoisinfo['server'] = e.arguments()
+
+    def on_whoisidle(self, c, e):
+        self.whoisinfo['idle'] = e.arguments()
+
+    def on_endofwhois(self, c, e):
+        if self.whoiscallbacks :
+            try:
+                func = self.whoiscallbacks.pop()
+                func(self,e,c)
+            except Exception, ex:
+                print "ERROR: %s"%ex
+                
     def do_pubcommand(self, e):
         nick = nm_to_n(e.source())
         c = self.connection

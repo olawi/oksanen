@@ -3,8 +3,11 @@
 
 import re
 import string
-from ircbot import SingleServerIRCBot, Channel
-from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
+
+from ircbot import SingleServerIRCBot
+from irclib import nm_to_n, nm_to_u
+
+from girlnames import girlnames
 
 uustytto_lista = []
 
@@ -15,12 +18,22 @@ def uustytto(self,e,c):
     
     nick = nm_to_n(e.source())
 
-    snick = re.sub('[^a-zA-Z0-9]','',nick)
+    self.whoiscallbacks.insert(0,uustytto_callback)
+    c.send_raw("WHOIS %s"%nick)
 
-    # DEBUG - just printouts so far
-    if not snick in uustytto_lista:
-        uustytto_lista.append(snick)
-        print "uustytto.py : %s uustytto?"%nick
-    else:
-        print "uustytto.py : %s wanhatytto."%nick
+def uustytto_callback(self,e,c):
+
+    nick = self.whoisinfo['user'][0]
+    snick = re.sub('[^a-zA-Z0-9]','',nick)
     
+    realname = self.whoisinfo['user'][4]
+
+    firstname = realname.split()[0]
+
+    if string.lower(firstname) in girlnames :
+        print " TYTTÖ! ----> %s"%realname
+        if not snick in uustytto_lista:
+            uustytto_lista.append(snick)
+            print "uustytto.py : %s uustytto?"%nick
+        else :
+            print "uustyttö.py : %s wanhatyttö :("%nick

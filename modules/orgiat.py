@@ -13,7 +13,7 @@ threesome = [ r"%s ja %s pistää %s:n vartaaseen",
               r"%s panee eestä ja %s pakee takaa, %s könnissä paikallaan makaa!" ]
 
 fourway = [ r"On %s ottanut prestoja, ei tunne estoja, %s katsoo ja runkkaa kun %s ja %s heiluttaa punkkaa!",
-            r"% js %s körmyyttää ja %s ja %s päättävät liittyä seuraan!" ]
+            r"%s ja %s körmyyttää ja %s ja %s päättävät liittyä seuraan!" ]
 
 
 def setup(self):

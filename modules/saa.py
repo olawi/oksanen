@@ -6,6 +6,7 @@ import htmllib
 import formatter
 
 import string
+import re
 import time
 import random
 
@@ -43,6 +44,8 @@ class parser(htmllib.HTMLParser):
     def __init__(self, verbose=0):
         self.state = 0
         self.output = []
+        self.weatherdata = {}
+        self.last_key = ''
         f = formatter.NullFormatter()
         htmllib.HTMLParser.__init__(self, f, verbose)
         
@@ -56,6 +59,19 @@ class parser(htmllib.HTMLParser):
         if self.state == 1:
             self.output = "%s"%self.save_end()
             self.state = 0;
+
+    def start_th(self,attrs):
+        self.save_bgn()
+    def end_th(self):
+        s = "%s"%self.save_end()
+        self.last_key = re.sub('[^\w]','',string.lower(string.join(s.split(),'')))
+
+    def start_td(self,attrs):
+        self.save_bgn()
+    def end_td(self):
+        s = self.save_end()
+        self.weatherdata[self.last_key] = "%s"%s
+
             
 def setup(self):
     self.commands['s‰‰'] = saa
@@ -81,10 +97,13 @@ def saa(self,e,c):
     else:
         messu = random.choice(saa_mrep)
 
-    if (saa.timenow - saa.timelast) < 3:
+    if (saa.timenow - saa.timelast) < 5:
         messu = random.choice(saa_qrep)
-        p.output = ""
 
-    c.privmsg(e.target(),"%s %s"%(messu,p.output)) 
+    wmessu = "%s, tuntuu ett‰ olis %s. "%(p.output,p.weatherdata['windchill'])
+
+    c.privmsg(e.target(),"%s %s"%(messu,wmessu)) 
+
+    print p.weatherdata
 
     saa.timelast = saa.timenow

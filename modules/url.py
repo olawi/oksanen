@@ -2,6 +2,7 @@
 # coding=utf-8
 
 import re
+import string
 import urllib
 from sgmllib import SGMLParser
 
@@ -27,13 +28,13 @@ class parser(SGMLParser):
 
     def end_title(self):
         self.title = self.buf
+        self.title = string.join(self.title.split(),' ')
         self.buf = ""
 
 def setup(self):
     self.pubhandlers.append(urlhandler)
 
 def urlhandler(self, e, c):
-    nick = nm_to_n(e.source())
 
     line = e.arguments()[0]
 
@@ -65,6 +66,7 @@ def urlhandler(self, e, c):
     if uri in urlbuf:
         return
 
+    nick = nm_to_n(e.source())
     c.privmsg(e.target(), "%s - '%s'"%(nick,p.title))
     
     urlbuf.insert(0,uri)

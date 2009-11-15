@@ -30,7 +30,7 @@ def debug(text):
         print text
 
 def is_admin(nick):
-    if nick == "mossman" or nick == "Olawi":
+    if nick == "mossman" or nick == "Olawi" or nick == "Squib":
         return True
     else:
         return False

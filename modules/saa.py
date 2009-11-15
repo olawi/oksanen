@@ -95,6 +95,14 @@ class fmi_parser(HTMLParser.HTMLParser):
                 self.buf += 'ä'
             if name == 'ouml':
                 self.buf += 'ö'
+            if name == 'aring':
+                self.buf += 'å'
+            if name == 'Auml':
+                self.buf += 'Ä'
+            if name == 'Ouml':
+                self.buf += 'Ö'
+            if name == 'Aring':
+                self.buf += 'Å'
             if name == 'nbsp':
                 self.buf += ' '
                 

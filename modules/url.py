@@ -17,7 +17,8 @@ class parser(SGMLParser):
     def __init__(self, content_start_comment='', content_end_comment=''):
         SGMLParser.__init__(self)
         self.buf = ""
-        self.title = ""
+        self.output = ""
+        self.entitydefs.update({'auml':'ä','ouml':'ö','aring':'å','Auml':'Ä','Ouml':'Ö','Aring':'Å','nbsp':' ',})
         
     def handle_data(self, data):
         self.buf += data
@@ -26,8 +27,8 @@ class parser(SGMLParser):
         self.buf = ""
 
     def end_title(self):
-        self.title = self.buf
-        self.title = string.join(self.title.split(),' ')
+        self.output = self.buf
+        self.output = string.join(self.output.split(),' ')
         self.buf = ""
 
 class opener(FancyURLopener):
@@ -76,10 +77,10 @@ def urlhandler(self, e, c):
                 return #wanha
             
         command = """INSERT INTO url (USER, URI, TITLE) VALUES (%s, %s, %s); """
-        cursor.execute(command, [nick, uri, p.title] )
+        cursor.execute(command, [nick, uri, p.output] )
             
-    if len(p.title) < 1:
+    if len(p.output) < 1:
         return
     else:
-        c.privmsg(e.target(), "%s - '%s'"%(nick,p.title))
+        c.privmsg(e.target(), "%s - '%s'"%(nick,p.output))
         

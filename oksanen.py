@@ -51,7 +51,7 @@ class Oksanen(SingleServerIRCBot):
         self.nickname = nickname
 
         if hasSql:
-            self.db = MySQLdb.connect(host=sqlparams[0], user=sqlparams[1], passwd=sqlparams[2], db = sqlparams[3])
+            self.db = MySQLdb.connect(host=sqlparams[0], user=sqlparams[1], passwd=sqlparams[2], db = sqlparams[3], charset = "utf8", use_unicode = True)
 
     def setup(self):
         self.commands = {}

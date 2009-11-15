@@ -12,9 +12,6 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
 url_s = '(((https?|ftp):\\/\\/)|www\\.)(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([a-zA-Z0-9\\-]+\\.)*[a-zA-Z0-9\\-]+\\.(com|net|org|info|biz|gov|name|edu|[a-zA-Z][a-zA-Z]))(:[0-9]+)?((\\/|\\?)[^ "]*[^,;\\.:">)])?'
 
-# lyhyt w-puskuri
-urlbuf = []
-
 class parser(SGMLParser):
     def __init__(self, content_start_comment='', content_end_comment=''):
         SGMLParser.__init__(self)
@@ -61,23 +58,26 @@ def urlhandler(self, e, c):
         print "url.py: FAIL opening %s"%uri
         return
     
+    nick = nm_to_n(e.source())
     page = fd.read()
     fd.close()
 
     p = parser()
     p.feed(page)
 
+    cursor = self.db.cursor()
+    
+    cursor.execute("""SELECT USER, DATE FROM url WHERE URI = %s;""", [uri])
+    for row in cursor.fetchall():
+        if nick != row[0]:
+            c.privmsg(e.target(), "%s - Wanha! Ensimmäisenä mainitsi %s %s"%(nick,row[0],row[1]))
+        return #wanha
+
+    command = """INSERT INTO url (USER, URI) VALUES (%s, %s); """
+    cursor.execute(command, [nick, uri] )
+
     if len(p.title) < 1:
         return
-    
-    if uri in urlbuf:
-        return
-
-    nick = nm_to_n(e.source())
-    c.privmsg(e.target(), "%s - '%s'"%(nick,p.title))
-    
-    urlbuf.insert(0,uri)
-    
-    if len(urlbuf) > 8:
-        del urlbuf[-1]
+    else:
+        c.privmsg(e.target(), "%s - '%s'"%(nick,p.title))
         

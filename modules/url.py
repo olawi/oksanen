@@ -39,7 +39,7 @@ def setup(self):
 def urlhandler(self, e, c):
 
     line = e.arguments()[0]
-
+    
     url_re = re.compile(url_s)
     m = re.search(url_re,line)
     
@@ -75,8 +75,8 @@ def urlhandler(self, e, c):
                 c.privmsg(e.target(), "%s - Wanha! Ensimmäisenä mainitsi %s %s"%(nick,row[0],row[1]))
                 return #wanha
             
-        command = """INSERT INTO url (USER, URI) VALUES (%s, %s); """
-        cursor.execute(command, [nick, uri] )
+        command = """INSERT INTO url (USER, URI, TITLE) VALUES (%s, %s, %s); """
+        cursor.execute(command, [nick, uri, p.title] )
             
     if len(p.title) < 1:
         return

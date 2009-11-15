@@ -14,12 +14,29 @@ def log(self, e, c):
     line = e.arguments()[0]
     target = string.join(line.split(" ")[1:], " ")
     if (target and len(target) > 0):
+        # Magic
+        logentry = -1
+        try:
+            logentry = int(target)
+            
+        except Exception, ex:
+            # Was not a number, go on
+            pass
+
         cursor = self.db.cursor()
+
+        if logentry == -1:
+            command = """INSERT INTO log (USER, ENTRY) VALUES (%s, %s); """
         
-        command = """INSERT INTO log (USER, ENTRY) VALUES (%s, %s); """
+            # Parametrized input should take care of SQL injection
+        
+            cursor.execute(command, [nick, target] )
+        
+            c.privmsg(e.target(), "Logissa on.")
+        else:
+            command = """SELECT USER, ENTRY FROM log WHERE `ID`=%s;"""
 
-        # Parametrized input should take care of SQL injection
+            cursor.execute(command, [ str(logentry) ] )
+            for row in cursor.fetchall():
+                c.privmsg(e.target(), "%s (Loggasi %s)"%(row[1], row[0]))
 
-        cursor.execute(command, [nick, target] )
-
-        c.privmsg(e.target(), "Little Bobby tables <3")

@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+# coding=utf-8
+
+import urllib
+import HTMLParser
+
+import string
+import re
+import time
+import random
+
+from ircbot import SingleServerIRCBot
+from irclib import nm_to_n

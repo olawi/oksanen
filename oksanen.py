@@ -20,11 +20,11 @@ except Exception, e:
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 import sys, imp
-sys.path.append("./modules")
 import thread
 import threading
 
 home = os.getcwd()
+sys.path.append("./modules")
 
 DEBUG=1
 
@@ -83,7 +83,7 @@ class Oksanen(SingleServerIRCBot):
 
                 modules.append(name)
 
-        for timerevent in timerevents:
+        for timerevent in self.timerevents:
             self.timer.add_operation(timerevent[0], timerevent[1])
         
         if modules: 

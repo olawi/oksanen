@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding=utf-8
+# -*- coding: utf-8 -*-
 
 import urllib
 import urllib2
@@ -34,7 +34,7 @@ def matka(self,e,c):
     end = re.sub('^ö','Ö',end)
     end = re.sub('^ä','Ä',end)
     end = re.sub('^å','Ä',end)
-
+        
     if bgn == end : c.privmsg(e.target(),"Yritätkö muka olla hauska?")
 
     req = urllib2.Request(tie_url,tie_querystring%(bgn,end))

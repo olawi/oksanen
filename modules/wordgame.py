@@ -6,7 +6,6 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
 import random
 from wordgame_wordlist import wordgame_wordlist
-#import wordgame_wordlist
 
 def setup(self):
     self.commands['sana'] = sana
@@ -16,11 +15,12 @@ def setup(self):
     
 def sana(self, e, c):
     nick = nm_to_n(e.source())
-    if len(sana.current_word) == 0:
+    if len(sana.current_word) != 0:
         c.privmsg(e.target(), "%s: ratkaise ensin tämä: %s"%(nick, sana.current_word_shuffle))
         return
     else:
-        sana.current_word = random.choice(sana_wordlist)
+        sana.current_word = random.choice(wordgame_wordlist)
+        print "bgn !sana: %s"%sana.current_word
         character_list = list(sana.current_word)
         random.shuffle(character_list)
         sana.current_word_shuffle = "".join(character_list)

@@ -20,6 +20,8 @@ except Exception, e:
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 import sys, imp
+import thread
+import threading
 
 home = os.getcwd()
 
@@ -39,6 +41,7 @@ class Oksanen(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port, sqlparams):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.channel = channel
+        self.timer = TimerManager()
         self.setup()
         print self.commands
         print self.pubhandlers
@@ -54,8 +57,11 @@ class Oksanen(SingleServerIRCBot):
         self.pubhandlers = []
         self.joinhandlers = []
         self.whoisinfo = {}
+        self.timerevents = []
         self.whoiscallbacks = []
 
+        self.timer.stop()
+        
         filenames = []
 
         for fn in os.listdir(os.path.join(home, 'modules')): 
@@ -76,6 +82,9 @@ class Oksanen(SingleServerIRCBot):
 
                 modules.append(name)
 
+        for timerevent in timerevents:
+            self.timer.add_operation(timerevent[0], timerevent[1])
+        
         if modules: 
             print >> sys.stderr, 'Registered modules:', ', '.join(modules)
         else: 
@@ -185,6 +194,38 @@ class Oksanen(SingleServerIRCBot):
         else:
             c.notice(nick, "En tajua: " + cmd)
 
+class TimerOperation(threading._Timer):
+    def __init__(self, *args, **kwargs):
+        threading._Timer.__init__(self, *args, **kwargs)
+        self.setDaemon(True)
+
+    def run(self):
+        while True:
+            self.finished.clear()
+            self.finished.wait(self.interval)
+            if not self.finished.isSet():
+                try:
+                    self.function(*self.args, **self.kwargs)
+                except Exception, e:
+                    print "ERROR (timer): %s"%e
+            else:
+                return
+            self.finished.set()
+
+class TimerManager(object):
+
+    ops = []
+
+    def add_operation(self, operation, interval, args=[], kwargs={}):
+        op = Operation(interval, operation, args, kwargs)
+        self.ops.append(op)
+        thread.start_new_thread(op.run, ())
+
+    def stop(self):
+        for op in self.ops:
+            op.cancel()
+        self.ops = []
+            
 def main():
     import sys
     from optparse import OptionParser

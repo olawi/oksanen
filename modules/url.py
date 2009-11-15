@@ -61,7 +61,7 @@ def urlhandler(self, e, c):
         return
     
     nick = nm_to_n(e.source())
-    page = fd.read()
+    page = fd.read(1024)
     fd.close()
 
     p = parser()

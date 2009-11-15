@@ -7,12 +7,11 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 import random
 from wordgame_wordlist import wordgame_wordlist
 
-wordgame.current_word = ""
-wordgame.current_word_shuffle = ""
-
 def setup(self):
     self.commands['sana'] = sana
-    self.pubhandlers.append(sanaChecker)
+    self.pubhandlers.append(sanaChecker
+    wordgame.current_word = ""
+    wordgame.current_word_shuffle = ""
     
 def sana(self, e, c):
     nick = nm_to_n(e.source())

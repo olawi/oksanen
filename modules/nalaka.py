@@ -33,7 +33,8 @@ class kaenkky_parser(HTMLParser.HTMLParser):
                         self.output = string.join(self.output.split(),' ')
                 
 def setup(self):
-    self.commands['näläkä'] = nalaka
+    nalaka.foo = 'bar'
+    #self.commands['näläkä'] = nalaka
 
 def get_kaenkky(self,url,params=None):
 

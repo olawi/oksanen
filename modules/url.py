@@ -7,6 +7,7 @@ import string
 from urllib import FancyURLopener
 from sgmllib import SGMLParser
 
+from oksanen import hasSql
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
@@ -65,17 +66,18 @@ def urlhandler(self, e, c):
     p = parser()
     p.feed(page)
 
-    cursor = self.db.cursor()
-    
-    cursor.execute("""SELECT USER, DATE FROM url WHERE URI = %s;""", [uri])
-    for row in cursor.fetchall():
-        if nick != row[0]:
-            c.privmsg(e.target(), "%s - Wanha! Ensimmäisenä mainitsi %s %s"%(nick,row[0],row[1]))
-        return #wanha
-
-    command = """INSERT INTO url (USER, URI) VALUES (%s, %s); """
-    cursor.execute(command, [nick, uri] )
-
+    if hasSql:
+        cursor = self.db.cursor()
+        
+        cursor.execute("""SELECT USER, DATE FROM url WHERE URI = %s;""", [uri])
+        for row in cursor.fetchall():
+            if nick != row[0]:
+                c.privmsg(e.target(), "%s - Wanha! Ensimmäisenä mainitsi %s %s"%(nick,row[0],row[1]))
+                return #wanha
+            
+            command = """INSERT INTO url (USER, URI) VALUES (%s, %s); """
+            cursor.execute(command, [nick, uri] )
+            
     if len(p.title) < 1:
         return
     else:

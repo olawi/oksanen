@@ -75,8 +75,8 @@ def urlhandler(self, e, c):
                 c.privmsg(e.target(), "%s - Wanha! Ensimmäisenä mainitsi %s %s"%(nick,row[0],row[1]))
                 return #wanha
             
-            command = """INSERT INTO url (USER, URI) VALUES (%s, %s); """
-            cursor.execute(command, [nick, uri] )
+        command = """INSERT INTO url (USER, URI) VALUES (%s, %s); """
+        cursor.execute(command, [nick, uri] )
             
     if len(p.title) < 1:
         return

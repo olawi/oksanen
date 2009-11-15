@@ -16,7 +16,7 @@ def setup(self):
     
 def sana(self, e, c):
     nick = nm_to_n(e.source())
-    if current_word != "":
+    if len(current_word) == 0:
         c.privmsg(e.target(), "%s: ratkaise ensin tämä: %s"%(nick, current_word_shuffle))
         return
     else:
@@ -28,7 +28,8 @@ def sana(self, e, c):
 
 def sanaChecker(self, e, c):
     line = e.arguments()[0]
-    if line == current_word:
-        nick = nm_to_n(e.source())
-        c.privmsg(e.target(), "%s: Oikein meni! Onnittelut"%(nick))
-        current_word = ""
+    if len(current_word) != 0:
+        if line == current_word:
+            nick = nm_to_n(e.source())
+            c.privmsg(e.target(), "%s: Oikein meni! Onnittelut"%(nick))
+            current_word = ""

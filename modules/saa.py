@@ -3,11 +3,9 @@
 
 import urllib
 import htmllib
-import sgmllib
 import formatter
 
 import HTMLParser
-
 
 import string
 import re
@@ -16,6 +14,8 @@ import random
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n
+
+fmi_locations = [ 'Alajarvi','Asikkala','Enontekio','Espoo','Foglo','Haapavesi','Hailuoto','Halsua','Hammarland','Hanko','Heinola','Helsinki','Hyvinkaa','Hameenlinna','Iisalmi','Ilomantsi','Inari','Inkoo','Joensuu','Jokioinen','Joutsa','Juuka','Juupajoki','Juva','Jyvaskyla','Jamsa','Kajaani','Kalajoki','Kankaanpaa','Kauhajoki','Kemi','Kemijarvi','Kemionsaari','Kilpisjarvi','Kirkkonummi','Kittila','Kokemaki','Kokkola','Korsnas','Kotka','Kouvola','Kristiinankaupunki','Kuhmo','Kumlinge','Kuopio','Kustavi','Kuusamo','Lahti','Lappeenranta','Lieksa','Lohja','Luhanka','Lansi-Turunmaa','Maaninka','Maarianhamina','Mikkeli','Multia','Muonio','Naantali','Nivala','Nurmes','Nurmijarvi','Oulu','Parikkala','Pelkosenniemi','Pello','Pernaja','Pietarsaari','Pori','Porvoo','Pudasjarvi','Punkaharju','Puumala','Pyhajarvi','Raahe','Raasepori','Ranua','Rauma','Rautavaara','Rovaniemi','Saariselka','Salla','Salo','Savonlinna','Savukoski','Seinajoki','Siikajoki','Sodankyla','Sotkamo','Suomussalmi','Taipalsaari','Taivalkoski','Tampere','Tohmajarvi','Tornio','Turku','Utsjoki','Uusikaupunki','Vaasa','Vantaa','Varkaus','Vihti','Viitasaari','Virolahti','Virrat','Ylitornio','Ylivieska','Ahtari']
 
 willab_url = "http://weather.willab.fi/weather.html"
 fmi_url = "http://www.fmi.fi/saa/paikalli.html?place="
@@ -109,7 +109,9 @@ class fmi_parser(HTMLParser.HTMLParser):
                     self.buf = ''
                     self.state = 1
         if tag == "strong" and self.state == 1:
-            self.buf += ' ' 
+            self.buf += ' '
+        #if tag == 'option': # fmi_locations printout
+            # print "'%s',"%attrs[0][1]            
 
     def handle_endtag(self,tag):
         if tag == "p":
@@ -118,40 +120,6 @@ class fmi_parser(HTMLParser.HTMLParser):
                 self.state = 0
         if tag == "strong" and self.state == 1:
             self.buf += ' ' 
-
-class fmi_parser2(sgmllib.SGMLParser):
-    def __init__(self, content_start_comment='', content_end_comment=''):
-        sgmllib.SGMLParser.__init__(self)
-        self.buf = ""
-        self.content = ""
-        self.state = 0
-        
-    def handle_data(self, data):
-        if self.state == 1:
-            print data
-            self.buf += data
-           
-    def handle_entityref(self, name):
-        if self.state == 1:
-            if name == 'auml':
-                self.buf += 'ä'
-            if name == 'ouml':
-                self.buf += 'ö'
-    
-
-    def start_p(self,attrs):
-        self.buf = ""
-        for a in attrs:
-            if a == ("class","observation-text"):
-                self.state = 1
-
-    def end_p(self):
-        if self.state == 1:
-            self.content = self.buf
-            self.content = string.join(self.content.split(),' ')
-        self.buf = ""
-        self.state = 0
-
 
 def get_fmi(self,location):
     
@@ -173,7 +141,8 @@ def get_willab(self):
     
     p = willab_parser()
     p.feed(page)
-    
+
+    p.weatherdata['tempnow'] = p.output    
     return p.weatherdata
     
 def setup(self):
@@ -183,36 +152,26 @@ def setup(self):
 def saa(self,e,c):
 
     saa.timenow = time.time()
-    
     line = e.arguments()[0]
+
+    c = self.connection
 
     if len(line.split()[1:]) < 1:
         location = 'Oulu'
     else:
         location = string.lower("%s"%line.split()[1])
 
+    location = re.sub('ä','a',location)
+    location = re.sub('ö','o',location)
+    location = re.sub('Ä','a',location)
+    location = re.sub('Ö','o',location)
     location = string.capitalize(location)
-    
-    output = get_fmi(self,location)
 
-    c = self.connection
-
-    c.privmsg(e.target(),"%s"%output)
-    saa.timelast = saa.timenow
-
-    return
-
-    if len(line.split()[1:]) < 1:
-        messu = random.choice(saa_orep)
+    if location in fmi_locations:
+        output = get_fmi(self,location)
     else:
-        messu = random.choice(saa_mrep)
-
-    if (saa.timenow - saa.timelast) < 5:
-        messu = random.choice(saa_qrep)
-
-    wmessu = "%s, tuntuu että olis %s. "%(p.output,p.weatherdata['windchill'])
-
-    c.privmsg(e.target(),"%s %s"%(messu,wmessu)) 
-
-    print p.weatherdata
+        output = "paikkakuntaa ei löydy fmi.fi. Sori!"
+   
+    c.privmsg(e.target(),"%s : %s"%(location,output))
+    saa.timelast = saa.timenow
 

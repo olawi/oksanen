@@ -69,7 +69,8 @@ def urlhandler(self, e, c):
     
     cursor.execute("""SELECT USER, DATE FROM url WHERE URI = %s;""", [uri])
     for row in cursor.fetchall():
-        c.privmsg(e.target(), "%s - Wanha! Ensimmäisenä mainitsi %s %s"%(nick,row[0],row[1]))
+        if nick != row[0]:
+            c.privmsg(e.target(), "%s - Wanha! Ensimmäisenä mainitsi %s %s"%(nick,row[0],row[1]))
         return #wanha
 
     command = """INSERT INTO url (USER, URI) VALUES (%s, %s); """

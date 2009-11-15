@@ -58,6 +58,7 @@ def urlhandler(self, e, c):
         print "url.py: FAIL opening %s"%uri
         return
     
+    nick = nm_to_n(e.source())
     page = fd.read()
     fd.close()
 
@@ -77,6 +78,5 @@ def urlhandler(self, e, c):
     if len(p.title) < 1:
         return
     else:
-        nick = nm_to_n(e.source())
         c.privmsg(e.target(), "%s - '%s'"%(nick,p.title))
         

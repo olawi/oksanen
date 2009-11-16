@@ -17,9 +17,11 @@ kaanna_kielet = [
     "englanti",
     "ruotsi",
     "viro",
+    "venäjä",
     "ranska",
     "bulgaria",
     "katalaani",
+    "tsekki",
     "tanska",
     "saksa",
     "kreikka",
@@ -35,11 +37,13 @@ kaanna_kielet = [
     "puola",
     "portugali",
     "romani",
-    "slovakki",
+    # RIKKI -> "slovakki",
     "somali",
     "turkki",
     "kiina"
     ]
+
+kaanna_notsupported = ["venäjä", "bulgaria", "kreikka", "japani", "kiina"] 
 
 kaanna_usage = "käytetään esim. että !käännä englanti-suomi dictionary ";
 
@@ -101,27 +105,34 @@ def kaanna(self,e,c):
     
     elif len(args) == 1:
         (lan1,lan2) = ('englanti','suomi')
-        query = args[0]
+        word = args[0]
 
     else:
         try:
             (lan1,lan2) = args[0].split('-')
-            query = args[1]
-            print "%s %s %s"%(lan1,lan2,query)
+            word = args[1]
+            print "%s %s %s"%(lan1,lan2,word)
         except:
             c.privmsg(e.target(),"%s, %s"%(nm_to_n(e.source()),kaanna_usage))
             return
 
-    print "%s %s %s"%(lan1,lan2,query)
-    if not (lan1 in kaanna_kielet and lan2 in kaanna_kielet):
+    print "%s %s %s"%(lan1,lan2,word)
+
+    if not (lan1 in kaanna_kielet and lan2 in kaanna_kielet) :
         c.privmsg(e.target(),"%s, sori vaan mutta en minä nyt ihan kaikkia kieliä osaa!"%nm_to_n(e.source()))
         return
-
+    
+    if (lan2 in kaanna_notsupported) :
+        c.privmsg(e.target(),"%s, sori mutta mun merkistöillä ei voi näyttää semmosta :/"%nm_to_n(e.source()))
+        return
+                  
+    query = "%s-%s/%s"%(lan1,lan2,word)
+    
     # Merkistöt kuosiin urlia varten
     query = unicode(query,'ISO-8859-1','ignore')
     query = query.encode('UTF-8')
 
-    fd = urllib.urlopen("%s%s-%s/%s"%(kaanna_url,lan1,lan2,query))
+    fd = urllib.urlopen("%s%s"%(kaanna_url,query))
     page = fd.read()
     fd.close
 
@@ -130,6 +141,6 @@ def kaanna(self,e,c):
 
     c = self.connection
     answart = re.sub(",\s?$",".",p.output)
-    c.privmsg(e.target(), "%s"%answart)
+    c.privmsg(e.target(), answart)
 
 

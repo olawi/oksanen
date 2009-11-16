@@ -116,7 +116,7 @@ class fmi_parser(HTMLParser.HTMLParser):
                 if a == ("class","observation-text"):
                     self.buf = ''
                     self.state = 1
-        if tag == "strong" and self.state == 1:
+        if tag == 'strong' and self.state == 1:
             self.buf += ' '
         #if tag == 'option': # fmi_locations printout
             # print "'%s',"%attrs[0][1]            
@@ -126,12 +126,12 @@ class fmi_parser(HTMLParser.HTMLParser):
             if self.state == 1:
                 self.content = self.buf
                 self.state = 0
-        if tag == "strong" and self.state == 1:
+        if tag == 'strong' and self.state == 1:
             self.buf += ' ' 
 
 def get_fmi(self,location):
     
-    print "%s%s"%(fmi_url,location)
+    print("%s%s"%(fmi_url,location))
     fd = urllib.urlopen("%s%s"%(fmi_url,location))
     page = fd.read()
     fd.close
@@ -152,7 +152,10 @@ def get_willab(self):
 
     p.weatherdata['tempnow'] = p.output    
     return p.weatherdata
-    
+
+def ircb(s):
+    return u'\u0002%s\u000f'%s
+
 def setup(self):
     self.commands['sää'] = saa
     saa.timelast = time.time()
@@ -176,10 +179,63 @@ def saa(self,e,c):
     location = string.capitalize(location)
 
     if location in fmi_locations:
-        output = get_fmi(self,location)
+        raw_output = get_fmi(self,location)
     else:
-        output = "paikkakuntaa ei löydy fmi.fi. Sori!"
-   
-    c.privmsg(e.target(),"%s : %s"%(location,output))
-    saa.timelast = saa.timenow
+        c.privmsg(e.target(),"%s - fmi.fi ei löydä paikkakuntaa. Sori!"%location)
+        return
 
+    showall = False
+    if len(line.split()[1:]) > 1:
+        showall = True
+
+    buf = string.join(raw_output.split(),' ')
+    buf = re.sub('ä','a',buf)
+    buf = re.sub('ö','o',buf)
+    
+    w_data = {}
+    m = re.search('(\d+.\d+.\d+)\s+(\d+:\d+)',buf)
+    buf = re.sub('.*?Suomen\s+aikaa','',buf)
+
+
+    print buf
+    if m:
+        w_data['date'] = m.group(1)
+        w_data['time'] = m.group(2)
+        
+    attrs = re.findall('(\w+\s?\w+)\s+?([\d,-]+)\s+([^\s\d]+?)\s*(\(\d+:\d+\))?[;:.]',buf)
+
+    for a in attrs:
+        w_data[string.lower(a[0])] = a[1:]
+
+    print(w_data) 
+
+    wignore = ['lampotila','time','date']
+    output = ''
+
+    if 'time' in w_data and 'lampotila' in w_data:
+        output += u"%s: %s\u00B0%s"%(
+            ircb(location),
+            ircb(w_data['lampotila'][0]),
+            w_data['lampotila'][1]
+            )
+        for k, v in w_data.iteritems():
+            if re.search('tuulta',k):
+                output += ", %s %s%s"%(k,v[0],v[1])
+                wignore.append(k)
+        output += ", mitattu klo %s"%w_data['time']
+        
+        if showall :
+            for k, v in w_data.iteritems():
+                if k in wignore:
+                    continue
+                if v[2]:
+                    output += "; %s %s%s %s"%(k,v[0],v[1],v[2])
+                else:
+                    output += "; %s %s%s"%(k,v[0],v[1])
+    else:
+        c.privmsg(e.target(),"fmi:llä jotain hässäkkää. Tässä nämä raakatiedot:")
+        output = raw_output
+        
+    c.privmsg(e.target(),"%s"%(output.encode('latin-1')))
+    saa.timelast = saa.timenow
+    

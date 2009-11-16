@@ -31,5 +31,6 @@ def lapsi(self, e, c):
         gname = girlnames[score%len(girlnames)]
         bname = dudenames[score%len(dudenames)]
 
-        c.privmsg(e.target(),"kun %s ja %s saavat lapsen, sen nimi tulee olemaan joko %s tai %s"%(nick,target,gname,bname))
+        output = u"kun %s ja %s saavat lapsen, sen nimi tulee olemaan joko %s tai %s"%(nick,target,gname,bname)
+        c.privmsg(e.target(),output.encode('ISO-8859-1'))
     

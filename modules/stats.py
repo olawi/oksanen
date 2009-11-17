@@ -11,16 +11,13 @@ def setup(self):
     self.pubhandlers.append(stats)
     stats.nicks = []
 
-def getlist(self, cursor):
-    cursor.execute("""SELECT user FROM user""")
-    for row in cursor.fetchall():
-        stats.nicks.append(row[0])
-
 def stats(self, e, c):
     if hasSql:
         cursor = self.db.cursor()
         if stats.nicks == []:
-            getlist(self, cursor);
+            cursor.execute("""SELECT user FROM user""")
+            for row in cursor.fetchall():
+                stats.nicks.append(row[0])
             
         #snick = re.sub('[^a-zA-Z0-9]','',nm_to_n(e.source()))
         nick = nm_to_n(e.source())

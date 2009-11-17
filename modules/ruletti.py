@@ -38,7 +38,7 @@ def ruletti(self,e,c):
 
     r = random.randint(1,6)
     if  r == 1:
-        c.privmsg(e.target(),"%s, *PAM*"%nick)
+        c.kick(e.target(),nick,"*BANG*")
     else:
         c.privmsg(e.target(),"%s, *click*"%nick)
 

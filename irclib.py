@@ -69,6 +69,9 @@ import string
 import sys
 import time
 import types
+import traceback
+
+import ircutil
 
 VERSION = 0, 4, 8
 DEBUG = 1
@@ -377,6 +380,8 @@ class ServerConnection(Connection):
         self.connected = 0  # Not connected yet.
         self.socket = None
         self.ssl = None
+        self.output_encoding = 'ISO-8859-15'
+        self.line_maxlen = 312
 
     def connect(self, server, port, nickname, password=None, username=None,
                 ircname=None, localaddress="", localport=0, ssl=False, ipv6=False):
@@ -762,9 +767,14 @@ class ServerConnection(Connection):
 
     def privmsg(self, target, text):
         """Send a PRIVMSG command."""
-        # Should limit len(text) here!
-        self.send_raw("PRIVMSG %s :%s" % (target, text))
-
+        if len(text) < self.line_maxlen:
+            self.send_encoded("PRIVMSG %s :%s" % (target, text))
+            return
+        """long line"""
+        lines = ircutil.wordwrap(text,self.line_maxlen)
+        for line in lines:
+            self.send_encoded("PRIVMSG %s :%s" % (target, line))
+            
     def privmsg_many(self, targets, text):
         """Send a PRIVMSG command to multiple targets."""
         # Should limit len(text) here!
@@ -776,7 +786,16 @@ class ServerConnection(Connection):
         # unless you've been connected for at least 5 minutes!
         self.send_raw("QUIT" + (message and (" :" + message)))
 
-    def send_raw(self, string):
+    def send_encoded(self, text):
+        """Send text encoded in self.output_encoding"""
+        try:
+            text = text.encode(self.output_encoding,'ignore')
+            self.send_raw(text)
+        except Exception, ex:
+            print "ERROR: %s"%ex
+            traceback.print_stack()        
+
+    def send_raw(self, send_raw_string):
         """Send raw string to the server.
 
         The string will be padded with appropriate CR LF.
@@ -785,11 +804,11 @@ class ServerConnection(Connection):
             raise ServerNotConnectedError, "Not connected."
         try:
             if self.ssl:
-                self.ssl.write(string + "\r\n")
+                self.ssl.write(send_raw_string + "\r\n")
             else:
-                self.socket.send(string + "\r\n")
+                self.socket.send(send_raw_string + "\r\n")
             if DEBUG:
-                print "TO SERVER:", string
+                print "TO SERVER:", send_raw_string
         except socket.error, x:
             # Ouch!
             self.disconnect("Connection reset by peer.")

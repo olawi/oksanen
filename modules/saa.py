@@ -14,6 +14,7 @@ import random
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n
+import ircutil
 
 fmi_locations = [ 'Alajarvi','Asikkala','Enontekio','Espoo','Foglo','Haapavesi','Hailuoto','Halsua','Hammarland','Hanko','Heinola','Helsinki','Hyvinkaa','Hameenlinna','Iisalmi','Ilomantsi','Inari','Inkoo','Joensuu','Jokioinen','Joutsa','Juuka','Juupajoki','Juva','Jyvaskyla','Jamsa','Kajaani','Kalajoki','Kankaanpaa','Kauhajoki','Kemi','Kemijarvi','Kemionsaari','Kilpisjarvi','Kirkkonummi','Kittila','Kokemaki','Kokkola','Korsnas','Kotka','Kouvola','Kristiinankaupunki','Kuhmo','Kumlinge','Kuopio','Kustavi','Kuusamo','Lahti','Lappeenranta','Lieksa','Lohja','Luhanka','Lansi-Turunmaa','Maaninka','Maarianhamina','Mikkeli','Multia','Muonio','Naantali','Nivala','Nurmes','Nurmijarvi','Oulu','Parikkala','Pelkosenniemi','Pello','Pernaja','Pietarsaari','Pori','Porvoo','Pudasjarvi','Punkaharju','Puumala','Pyhajarvi','Raahe','Raasepori','Ranua','Rauma','Rautavaara','Rovaniemi','Saariselka','Salla','Salo','Savonlinna','Savukoski','Seinajoki','Siikajoki','Sodankyla','Sotkamo','Suomussalmi','Taipalsaari','Taivalkoski','Tampere','Tohmajarvi','Tornio','Turku','Utsjoki','Uusikaupunki','Vaasa','Vantaa','Varkaus','Vihti','Viitasaari','Virolahti','Virrat','Ylitornio','Ylivieska','Ahtari']
 
@@ -153,9 +154,6 @@ def get_willab(self):
     p.weatherdata['tempnow'] = p.output    
     return p.weatherdata
 
-def ircb(s):
-    return u'\u0002%s\u000f'%s
-
 def setup(self):
     self.commands['s‰‰'] = saa
     saa.timelast = time.time()
@@ -204,24 +202,31 @@ def saa(self,e,c):
         
     attrs = re.findall('(\w+\s?\w+)\s+?([\d,-]+)\s+([^\s\d]+?)\s*(\(\d+:\d+\))?[;:.]',buf)
 
+    print attrs
+    
     for a in attrs:
-        w_data[string.lower(a[0])] = a[1:]
+        k = string.lower(a[0])
+        w_data[k] = list(a[1:])
+        try:
+            if a[2] == 'C': w_data[k][1] = u"\u00B0%s"%w_data[k][1]
+        except: 
+            print "ERROR: wronk data from server in weather.py%s"%ex
 
     print(w_data) 
 
     wignore = ['lampotila','time','date']
     output = ''
 
-    if 'time' in w_data and 'lampotila' in w_data:
-        output += u"%s: %s\u00B0%s"%(
-            ircb(location),
-            ircb(w_data['lampotila'][0]),
-            w_data['lampotila'][1]
-            )
+    if ('time' in w_data) and ('lampotila' in w_data):
+        output += u"%s: %s%s"%( ircutil.bold(location),
+                                ircutil.bold(w_data['lampotila'][0]),
+                                w_data['lampotila'][1] )
+
         for k, v in w_data.iteritems():
             if re.search('tuulta',k):
                 output += ", %s %s%s"%(k,v[0],v[1])
                 wignore.append(k)
+
         output += ", mitattu klo %s"%w_data['time']
         
         if showall :
@@ -233,7 +238,7 @@ def saa(self,e,c):
                 else:
                     output += "; %s %s%s"%(k,v[0],v[1])
     else:
-        c.privmsg(e.target(),"fmi:ll‰ jotain h‰ss‰kk‰‰. T‰ss‰ n‰m‰ raakatiedot:")
+        c.privmsg(e.target(),"fmi:ll‰ jotain h‰ss‰kk‰‰. T‰ss‰ mit‰ sain irti:")
         output = raw_output
         
     c.privmsg(e.target(),"%s"%(output.encode('latin-1')))

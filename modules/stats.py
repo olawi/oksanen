@@ -24,6 +24,7 @@ def stats(self, e, c):
 
         if not nick in stats.nicks:
             cursor.execute("INSERT INTO user (user) VALUES(%s);", [nick])
+            stats.nicks.append(nick)
         
         line = e.arguments()[0]
         wordcount = len(line.split())

@@ -156,6 +156,7 @@ def get_willab(self):
 
 def setup(self):
     self.commands['s‰‰'] = saa
+    self.commands['saa'] = saa
     saa.timelast = time.time()
     
 def saa(self,e,c):

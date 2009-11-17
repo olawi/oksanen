@@ -10,6 +10,12 @@ import string,re
 def bold(s):
     return u'\u0002%s\u000f'%s
 
+def ul(s):
+    return u'\u001F%s\u000f'%s
+
+def it(s):
+    return u'\u0016%s\u000f'%s
+
 def wordwrap(text, length_max, trim_whitespace=True):
     """Wrap long lines by word boundaries"""
     rarray = []

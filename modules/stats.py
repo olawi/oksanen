@@ -31,5 +31,5 @@ def stats(self, e, c):
         line = e.arguments()[0]
         wordcount = len(line.split())
         currenthour = int(strftime("%H",localtime()))
-        cursor.execute("UPDATE user SET says = says + 1, words = words + %s WHERE user = %s;", [wordcount,nick])
-        cursor.execute("UPDATE hourstats SET says = says + 1, words = words + %s WHERE hour = %s;", [wordcount,currenthour])
+        cursor.execute("UPDATE user SET said = said + 1, words = words + %s WHERE user = %s;", [wordcount,nick])
+        cursor.execute("UPDATE hourstats SET said = said + 1, words = words + %s WHERE hour = %s;", [wordcount,currenthour])

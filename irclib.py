@@ -381,7 +381,7 @@ class ServerConnection(Connection):
         self.socket = None
         self.ssl = None
         self.output_encoding = 'ISO-8859-15'
-        self.line_maxlen = 312
+        self.line_maxlen = 396
 
     def connect(self, server, port, nickname, password=None, username=None,
                 ircname=None, localaddress="", localport=0, ssl=False, ipv6=False):
@@ -789,11 +789,14 @@ class ServerConnection(Connection):
     def send_encoded(self, text):
         """Send text encoded in self.output_encoding"""
         try:
-            text = text.encode(self.output_encoding,'ignore')
-            self.send_raw(text)
+            tmp = text.encode(self.output_encoding,'ignore')
+            self.send_raw(tmp)
         except Exception, ex:
             print "ERROR: %s"%ex
-            traceback.print_stack()        
+            if DEBUG > 1:
+                traceback.print_stack()
+            """fallback"""
+            self.send_raw(r'%s'%text)
 
     def send_raw(self, send_raw_string):
         """Send raw string to the server.

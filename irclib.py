@@ -380,7 +380,7 @@ class ServerConnection(Connection):
         self.connected = 0  # Not connected yet.
         self.socket = None
         self.ssl = None
-        self.output_encoding = 'ISO-8859-15'
+        self.output_encoding = 'UTF-8'
         self.line_maxlen = 396
 
     def connect(self, server, port, nickname, password=None, username=None,

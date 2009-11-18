@@ -222,6 +222,7 @@ def saa(self,e,c):
             c.privmsg(e.target(),"en saa yhteyttä ilmatieteen laitokseen. Sori!")
             return
         
-    c.privmsg(e.target(),"%s"%ircutil.recode(output))
+    output = ircutil.recode(output,'utf-8')
+    c.privmsg(e.target(),"%s"%output)
     saa.timelast = saa.timenow
     

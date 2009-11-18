@@ -129,7 +129,7 @@ def get_willab(self):
     p = willab_parser()
     p.feed(page)
 
-    p.weatherdata['tempnow'] = p.output    
+    p.weatherdata['tempnow'] = unicode(p.output,'ascii','ignore')
     return p.weatherdata
 
 def setup(self):
@@ -158,7 +158,7 @@ def saa(self,e,c):
         if showall:
             for k, v in w_data.iteritems():
                 if not k == 'tempnow':
-                    output += "; %s %s"%(k,v)
+                    output += "; %s %s"%(k,unicode(v,'ascii','ignore'))
         c.privmsg(e.target(),output)
         return
 
@@ -202,7 +202,8 @@ def saa(self,e,c):
     if ('time' in w_data) and ('lampotila' in w_data):
         output += u"%s: %s %s"%( ircutil.bold(location),
                                  ircutil.bold(w_data['lampotila'][0]),
-                                 ircutil.bold(w_data['lampotila'][1]) )
+                                 #ircutil.bold(w_data['lampotila'][1]) )
+                                 ircutil.bold('C') )
 
         for k, v in w_data.iteritems():
             if re.search('tuulta',k):
@@ -218,7 +219,8 @@ def saa(self,e,c):
                 if v[2]:
                     output += "; %s %s %s %s"%(k,v[0],v[1],v[2])
                 else:
-                    output += "; %s %s %s"%(k,v[0],v[1])
+                    #output += "; %s %s %s"%(k,v[0],v[1])
+                    output += "; %s %s %s"%(k,v[0],unicode(v[1],'ascii','ignore'))
     else:
         if len(raw_output) > 0:
             c.privmsg(e.target(),"fmi.fi palauttaa kummallista dataa. Tässä mitä sain irti:")

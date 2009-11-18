@@ -185,8 +185,8 @@ def saa(self,e,c):
         k = string.lower(a[0])
         w_data[k] = list(a[1:])
         try:
-            #if a[2] == 'C': w_data[k][1] = u"\u00B0%s"%w_data[k][1]
-            if a[2] == 'C': w_data[k][1] = '°C'
+            if a[2] == 'C': w_data[k][1] = u"\u00B0%s"%w_data[k][1]
+            #if a[2] == 'C': w_data[k][1] = '°C'
         except: 
             print "ERROR: wronk data from server in weather.py%s"%ex
 
@@ -196,13 +196,13 @@ def saa(self,e,c):
     output = ''
 
     if ('time' in w_data) and ('lampotila' in w_data):
-        output += u"%s: %s%s"%( ircutil.bold(location),
+        output += u"%s: %s %s"%( ircutil.bold(location),
                                 ircutil.bold(w_data['lampotila'][0]),
                                 w_data['lampotila'][1] )
 
         for k, v in w_data.iteritems():
             if re.search('tuulta',k):
-                output += ", %s %s%s"%(k,v[0],v[1])
+                output += ", %s %s %s"%(k,v[0],v[1])
                 wignore.append(k)
 
         output += ", mitattu klo %s"%w_data['time']
@@ -212,9 +212,9 @@ def saa(self,e,c):
                 if k in wignore:
                     continue
                 if v[2]:
-                    output += "; %s %s%s %s"%(k,v[0],v[1],v[2])
+                    output += "; %s %s %s %s"%(k,v[0],v[1],v[2])
                 else:
-                    output += "; %s %s%s"%(k,v[0],v[1])
+                    output += "; %s %s %s"%(k,v[0],v[1])
     else:
         if len(raw_output) > 0:
             c.privmsg(e.target(),"fmi.fi palauttaa kummallista dataa. Tässä mitä sain irti:")
@@ -223,7 +223,6 @@ def saa(self,e,c):
             c.privmsg(e.target(),"en saa yhteyttä ilmatieteen laitokseen. Sori!")
             return
         
-    output = ircutil.recode(output,'utf-8')
-    c.privmsg(e.target(),"%s"%output)
+    c.privmsg(e.target(),"%s "%output)
     saa.timelast = saa.timenow
     

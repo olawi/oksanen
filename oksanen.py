@@ -35,7 +35,7 @@ def debug(text):
         print text
 
 def is_admin(nick):
-    if nick == "mossman" or nick == "Olawi" or nick == "Squib":
+    if nick in ["mossman", "Olawi", "Squib"]:
         return True
     else:
         return False
@@ -179,6 +179,9 @@ class Oksanen(SingleServerIRCBot):
         nick = nm_to_n(e.source())
         c = self.connection
 
+        line = e.arguments()[0]
+        line = ircutil.recode(line)
+
         # for now
         if is_admin(nick) and cmd == "reload":
             self.setup()
@@ -196,6 +199,16 @@ class Oksanen(SingleServerIRCBot):
                 voiced = chobj.voiced()
                 voiced.sort()
                 c.notice(nick, "Voiced: " + ", ".join(voiced))
+        elif is_admin(nick) and line[0] == "!" and len(line) > 1:
+            parts = line[1:].split()
+            cmd = parts[0].lower()
+            try:
+                func = self.commands[cmd]
+                """query source -> target"""
+                e._target = e.source()
+                func(self, e, c)
+            except Exception, e:
+                print "ERROR: %s"%e
         else:
             c.notice(nick, "En tajua: " + cmd)
 

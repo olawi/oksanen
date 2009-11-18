@@ -39,7 +39,7 @@ def log(self, e, c):
             cursor.execute(command, [ str(logentry) ] )
             for row in cursor.fetchall():
                 s = "%s (Loggasi %s)"%(row[1], row[0])
-                c.privmsg(e.target(), s.encode('latin-1'))
+                c.privmsg(e.target(), s)
     else:
         c.privmsg(e.target(), "Interwebsissähän ne. http://rosvosektori.wipsl.com/numero/")
 

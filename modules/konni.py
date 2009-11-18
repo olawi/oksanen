@@ -3,13 +3,13 @@
 
 import re
 import string
-import time
-import datetime
+import random
+from datetime import datetime, timedelta
 import ircutil
 
 from irclib import nm_to_n
 
-konni_re = r'korks|tölks|\bsnuu|\bolus?(en|tta|el)|kal(i|j)+a?(a|lle|n)|\bbaari|\bnuq|\bnukku|\böitä|\blähd?en|\bmen?en'
+konni_re = r'korks|tölks|[^!]\bkönni|\bsnuu|\bolus?(en|tta|el)|kal(i|j)+a?(a|lle|n)|\bbaari|\bnuq|\bnukku|\böitä|\blähd?[en|tis]|\bmen?e+n'
 
 def setup(self):
     self.pubhandlers.append(konni_track)
@@ -26,14 +26,14 @@ def konni_track(self,e,c):
         return
  
     nick = nm_to_n(e.source())
-    t = datetime.datetime.now()
+    now = datetime.now()
     
-    konni.konniset[nick] = [t,line]
+    konni.konniset[nick] = [now,line]
 
-    """remove entries > 8h"""
+    """liian vanhat pois"""
     ke = konni.konniset.keys()
     for k in ke:
-        if (t.day-konni.konniset[k][0].day) > 1:
+        if (now - konni.konniset[k][0]) > timedelta (hours = 8):
             del konni.konniset[k]
 
     print konni.konniset
@@ -43,6 +43,23 @@ def konni(self,e,c):
 
     line = e.arguments()[0]
     who = string.join(line.split()[1:], " ")
+
+    now = datetime.now()
+
+    if len(who) < 1:
+        nl = []
+        """random line from the past four hours"""
+        for k, v in konni.konniset.iteritems():
+            print now
+            print v[0]
+            if (now - v[0]) < timedelta (hours = 3):
+                nl.append(k)
+                print nl
+        if len(nl) > 0:
+            who = random.choice(nl)
+        else:
+            c.privmsg(e.target(),"eipä kyllä kukaan taida tehdä mitään jännää...")
+            return
 
     if who in konni.konniset:
         data = konni.konniset[who]

@@ -79,10 +79,12 @@ class fmi_parser(HTMLParser.HTMLParser):
             if name == 'Ouml':
                 self.buf += 'Ö'
             if name == 'Aring':
-                self.buf += 'Å'
+                self.buf += 'Å' 
+            if name == 'deg':
+                self.buf += '°'
             if name == 'nbsp':
                 self.buf += ' '
-                
+               
     def handle_startendtag(self,tag,attrs):
         if tag == 'br' and self.state == 1:
             self.buf += ' '
@@ -140,12 +142,25 @@ def saa(self,e,c):
     saa.timenow = time.time()
     line = e.arguments()[0]
 
-    c = self.connection
+    showall = False
+    if len(line.split()[1:]) > 1:
+        showall = True
 
     if len(line.split()[1:]) < 1:
         location = 'Oulu'
     else:
         location = string.lower("%s"%line.split()[1])
+
+    if location == 'willab':
+        w_data = get_willab(self)
+        output = ircutil.bold('Oulu')
+        output += ", VTT:n katto, %s"%ircutil.bold(w_data['tempnow'])
+        if showall:
+            for k, v in w_data.iteritems():
+                if not k == 'tempnow':
+                    output += "; %s %s"%(k,v)
+        c.privmsg(e.target(),output)
+        return
 
     location = re.sub('ä','a',location)
     location = re.sub('ö','o',location)
@@ -159,36 +174,25 @@ def saa(self,e,c):
         c.privmsg(e.target(),"%s - fmi.fi ei löydä paikkakuntaa. Sori!"%location)
         return
 
-    showall = False
-    if len(line.split()[1:]) > 1:
-        showall = True
-
     buf = ircutil.recode(string.join(raw_output.split(),' '))
     buf = re.sub('ä','a',buf)
     buf = re.sub('ö','o',buf)
-    
+    print buf
     w_data = {}
     m = re.search('(\d+.\d+.\d+)\s+(\d+:\d+)',buf)
     buf = re.sub('.*?Suomen\s+aikaa','',buf)
 
-
     print buf
+
     if m:
         w_data['date'] = m.group(1)
         w_data['time'] = m.group(2)
         
     attrs = re.findall('(\w+\s?\w+)\s+?([\d,-]+)\s+([^\s\d]+?)\s*(\(\d+:\d+\))?[;:.]',buf)
 
-    print attrs
-    
     for a in attrs:
         k = string.lower(a[0])
         w_data[k] = list(a[1:])
-        try:
-            if a[2] == 'C': w_data[k][1] = u"\u00B0%s"%w_data[k][1]
-            #if a[2] == 'C': w_data[k][1] = '°C'
-        except: 
-            print "ERROR: wronk data from server in weather.py%s"%ex
 
     print(w_data) 
 
@@ -197,8 +201,8 @@ def saa(self,e,c):
 
     if ('time' in w_data) and ('lampotila' in w_data):
         output += u"%s: %s %s"%( ircutil.bold(location),
-                                ircutil.bold(w_data['lampotila'][0]),
-                                w_data['lampotila'][1] )
+                                 ircutil.bold(w_data['lampotila'][0]),
+                                 ircutil.bold(w_data['lampotila'][1]) )
 
         for k, v in w_data.iteritems():
             if re.search('tuulta',k):
@@ -220,7 +224,7 @@ def saa(self,e,c):
             c.privmsg(e.target(),"fmi.fi palauttaa kummallista dataa. Tässä mitä sain irti:")
             output = raw_output
         else:
-            c.privmsg(e.target(),"en saa yhteyttä ilmatieteen laitokseen. Sori!")
+            c.privmsg(e.target(),"en saa yhteyttä ilmatieteen laitokseen. Yritä !sää willab")
             return
         
     c.privmsg(e.target(),"%s "%output)

@@ -10,6 +10,7 @@ from sgmllib import SGMLParser
 from oksanen import hasSql
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
+from ircutil import recode
 
 url_s = '(((https?|ftp):\\/\\/)|www\\.)(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([a-zA-Z0-9\\-]+\\.)*[a-zA-Z0-9\\-]+\\.(com|net|org|info|biz|gov|name|edu|[a-zA-Z][a-zA-Z]))(:[0-9]+)?((\\/|\\?)[^ "]*[^,;\\.:">)])?'
 
@@ -67,6 +68,8 @@ def urlhandler(self, e, c):
     p = parser()
     p.feed(page)
 
+    pagetitle = recode(p.output)
+
     if hasSql:
         cursor = self.db.cursor()
         
@@ -77,10 +80,10 @@ def urlhandler(self, e, c):
                 return #wanha
             
         command = """INSERT INTO url (USER, URI, TITLE) VALUES (%s, %s, %s); """
-        cursor.execute(command, [nick, uri, p.output] )
+        cursor.execute(command, [nick, uri, pagetitle] )
             
-    if len(p.output) < 1:
+    if len(pagetitle) < 1:
         return
     else:
-        c.privmsg(e.target(), "%s - '%s'"%(nick,p.output))
+        c.privmsg(e.target(), "%s - '%s'"%(nick,pagetitle))
         

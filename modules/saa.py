@@ -163,7 +163,7 @@ def saa(self,e,c):
     if len(line.split()[1:]) > 1:
         showall = True
 
-    buf = string.join(raw_output.split(),' ')
+    buf = ircutil.recode(string.join(raw_output.split(),' '))
     buf = re.sub('ä','a',buf)
     buf = re.sub('ö','o',buf)
     
@@ -185,7 +185,8 @@ def saa(self,e,c):
         k = string.lower(a[0])
         w_data[k] = list(a[1:])
         try:
-            if a[2] == 'C': w_data[k][1] = u"\u00B0%s"%w_data[k][1]
+            #if a[2] == 'C': w_data[k][1] = u"\u00B0%s"%w_data[k][1]
+            if a[2] == 'C': w_data[k][1] = '°C'
         except: 
             print "ERROR: wronk data from server in weather.py%s"%ex
 

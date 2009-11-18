@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from recode import recode
-
 def setup(self):
     self.commands['help'] = help
 

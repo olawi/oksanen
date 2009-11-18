@@ -9,11 +9,12 @@ import ircutil
 
 from irclib import nm_to_n
 
-konni_re = r'korks|tölks|[^!]\bkönni|\bsnuu|\bolus?(en|tta|el)|kal(i|j)+a?(a|lle|n)|\bbaari|\bnuq|\bnukku|\böitä|\blähd?[en|tis]|\bmen?e+n'
+konni_re = r'korks|tölks|[^!]\bkönni|\briipas|\bsnuu|\bolus?(en|tta|el)|\bkal(i|j)+a?|\bbaari|\bnuq|\bnukku|\böitä|\blähd?[en|tis]|\bmen(e|i)+n|\bmeen'
 
 def setup(self):
     self.pubhandlers.append(konni_track)
     self.commands['könniset'] = konni
+    self.commands['ryyppyseura'] = konni
     konni.konniset = {}
 
 def konni_track(self,e,c):
@@ -24,7 +25,7 @@ def konni_track(self,e,c):
     
     if not m:
         return
- 
+    
     nick = nm_to_n(e.source())
     now = datetime.now()
     
@@ -36,8 +37,8 @@ def konni_track(self,e,c):
         if (now - konni.konniset[k][0]) > timedelta (hours = 8):
             del konni.konniset[k]
 
-    print konni.konniset
-                   
+    print "konni updated : %s"%konni.konniset[nick]
+    
 def konni(self,e,c):
     """ilmoittaa viimeisimmän matchin nickin perusteella"""
 
@@ -50,11 +51,8 @@ def konni(self,e,c):
         nl = []
         """random line from the past four hours"""
         for k, v in konni.konniset.iteritems():
-            print now
-            print v[0]
             if (now - v[0]) < timedelta (hours = 3):
                 nl.append(k)
-                print nl
         if len(nl) > 0:
             who = random.choice(nl)
         else:

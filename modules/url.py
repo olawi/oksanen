@@ -33,7 +33,7 @@ class parser(SGMLParser):
         self.buf = ""
 
 class opener(FancyURLopener):
-    version = 'Lynx/2.8.5rel.1 libwww-FM/2.14 SSL-MM/1.4.1 GNUTLS/1.2.9'
+    version = 'Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.246.0 Safari/532.5'
 
 def setup(self):
     self.pubhandlers.append(urlhandler)

@@ -7,10 +7,10 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
 celine_messages = [
     "HYI HELEVETTI!!!",
-    "jos viel‰ kerran mainitset sen kanadalaisen lehm‰n nimen t‰ll‰ kanavalla, saat ovesta p‰‰h‰n!",
-    "eikˆ se ole viel‰ menny perille ett‰ siit‰ sumutorvesta ei puhuta?",
-    "voi jeesus mik‰ lehm‰ sekin on. Olisit sin‰kin vaan hiljaa.",
-    "selinen mik‰..? EI NYT SAATANA!"
+    "jos viel√§ kerran mainitset sen kanadalaisen lehm√§n nimen t√§ll√§ kanavalla, saat ovesta p√§√§h√§n!",
+    "eik√∂ se ole viel√§ menny perille ett√§ siit√§ sumutorvesta ei puhuta?",
+    "voi jeesus mik√§ lehm√§ sekin on. Olisit sin√§kin vaan hiljaa.",
+    "selinen mik√§√§√§..? EI NYT SAATANA!"
     ]
 
 def setup(self):

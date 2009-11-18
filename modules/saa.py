@@ -21,30 +21,6 @@ fmi_locations = [ 'Alajarvi','Asikkala','Enontekio','Espoo','Foglo','Haapavesi',
 willab_url = "http://weather.willab.fi/weather.html"
 fmi_url = "http://www.fmi.fi/saa/paikalli.html?place="
 
-saa_qrep = [
-    "Pit‰‰kˆ se yhten‰‰n olla sit‰ s‰‰t‰kin utelemassa?",
-    "En min‰ mik‰‰n liikkuva s‰‰asema ole?",
-    "N‰yt‰nkˆ min‰ sinusta Juha Fˆhrilt‰? H‰h?",
-    "RAUHOTTUKAAPA!",
-    "Mik‰ ihme siin‰ on ettei ihmisi‰ muu kiinnosta?"
-    ]
-
-saa_orep = [
-    "VTT:n Jari tuumailee ett‰ Oulussa on l‰mmint‰ palttiarallaa",
-    "Oulussa",
-    "Teknillisen tutkimuskeskuksen ihmeellinen laitteisto kertoo ett‰ Oulusa",
-    "Ai m‰‰ vai? Oulussa on",
-    "Teknologiakyl‰n katolla ainaki on "
-    ]
-
-saa_mrep = [
-    "Vitut min‰ siit‰ tied‰n tai v‰lit‰n, mutta Oulussa on",
-    "Ai jossain per‰hiki‰ll‰? Mit‰ v‰li‰! Oulussa on",
-    "Miss‰? T‰‰ll‰ on ainaki",
-    "En kuule tied‰. Mit‰ s‰ siell‰ teet? Oulussa on",
-    "Otappa ihan itte kuule selv‰‰. Oulussa on"
-    ]
-
 class willab_parser(htmllib.HTMLParser):
     
     def __init__(self, verbose=0):
@@ -93,17 +69,17 @@ class fmi_parser(HTMLParser.HTMLParser):
     def handle_entityref(self, name):
         if self.state == 1:
             if name == 'auml':
-                self.buf += '‰'
+                self.buf += '√§'
             if name == 'ouml':
-                self.buf += 'ˆ'
+                self.buf += '√∂'
             if name == 'aring':
-                self.buf += 'Â'
+                self.buf += '√•'
             if name == 'Auml':
-                self.buf += 'ƒ'
+                self.buf += '√Ñ'
             if name == 'Ouml':
-                self.buf += '÷'
+                self.buf += '√ñ'
             if name == 'Aring':
-                self.buf += '≈'
+                self.buf += '√Ö'
             if name == 'nbsp':
                 self.buf += ' '
                 
@@ -155,7 +131,7 @@ def get_willab(self):
     return p.weatherdata
 
 def setup(self):
-    self.commands['s‰‰'] = saa
+    self.commands['s√§√§'] = saa 
     self.commands['saa'] = saa
     saa.timelast = time.time()
     
@@ -171,16 +147,16 @@ def saa(self,e,c):
     else:
         location = string.lower("%s"%line.split()[1])
 
-    location = re.sub('‰','a',location)
-    location = re.sub('ˆ','o',location)
-    location = re.sub('ƒ','a',location)
-    location = re.sub('÷','o',location)
+    location = re.sub('√§','a',location)
+    location = re.sub('√∂','o',location)
+    location = re.sub('√Ñ','a',location)
+    location = re.sub('√ñ','o',location)
     location = string.capitalize(location)
 
     if location in fmi_locations:
         raw_output = get_fmi(self,location)
     else:
-        c.privmsg(e.target(),"%s - fmi.fi ei lˆyd‰ paikkakuntaa. Sori!"%location)
+        c.privmsg(e.target(),"%s - fmi.fi ei l√∂yd√§ paikkakuntaa. Sori!"%location)
         return
 
     showall = False
@@ -188,8 +164,8 @@ def saa(self,e,c):
         showall = True
 
     buf = string.join(raw_output.split(),' ')
-    buf = re.sub('‰','a',buf)
-    buf = re.sub('ˆ','o',buf)
+    buf = re.sub('√§','a',buf)
+    buf = re.sub('√∂','o',buf)
     
     w_data = {}
     m = re.search('(\d+.\d+.\d+)\s+(\d+:\d+)',buf)
@@ -239,9 +215,13 @@ def saa(self,e,c):
                 else:
                     output += "; %s %s%s"%(k,v[0],v[1])
     else:
-        c.privmsg(e.target(),"fmi:ll‰ jotain h‰ss‰kk‰‰. T‰ss‰ mit‰ sain irti:")
-        output = raw_output
+        if len(raw_output) > 0:
+            c.privmsg(e.target(),"fmi.fi palauttaa kummallista dataa. T√§ss√§ mit√§ sain irti:")
+            output = raw_output
+        else:
+            c.privmsg(e.target(),"en saa yhteytt√§ ilmatieteen laitokseen. Sori!")
+            return
         
-    c.privmsg(e.target(),"%s"%(output.encode('latin-1')))
+    c.privmsg(e.target(),"%s"%output)
     saa.timelast = saa.timenow
     

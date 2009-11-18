@@ -14,12 +14,12 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
 quote_url = "http://www.quotationspage.com/search.php3?homesearch="
 quote_nfm = [
-    "ei se kaveri ole koskaan sanonut mit‰‰n j‰rkev‰‰",
-    "en m‰ nyt kuule jaksa. Googlaa itte?",
+    "ei se kaveri ole koskaan sanonut mit√§√§n j√§rkev√§√§",
+    "en m√§ nyt kuule jaksa. Googlaa itte?",
     "kuka se semmonen muka on?",
-    "koskaan kuullukkaan koko tyypist‰!",
-    "ei mun tietokannassa nyt ihan jokaista ole joka on joskus jotakin suustaan p‰‰st‰nyt.",
-    "valitettavasti nyt kuule en. Ei nimitt‰in lˆydy."
+    "koskaan kuullukkaan koko tyypist√§!",
+    "ei mun tietokannassa nyt ihan jokaista ole joka on joskus jotakin suustaan p√§√§st√§nyt.",
+    "valitettavasti nyt kuule en. Ei nimitt√§√§in l√∂ydy."
     ]
 
 class parser(htmllib.HTMLParser):

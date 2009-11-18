@@ -16,7 +16,7 @@ query_random = "p=k&id=-1"
 query_kaupunginosa = "p=kht&nimi=&kaupunginosa=%s&rating=&elossa=2&submit=+Hae+ruokapaikat+"
 query_keyword = "p=kht&nimi=%s&kaupunginosa=&rating=&elossa=1&submit=+Hae+ruokapaikat+"
 
-kaupunginosat = [ "hˆyhty‰","kaakkuri","kaijonharju","kastelli","kaukovainio","keskusta","korvensuora","koskela","kuivasj‰rvi","limingantulli","maikkula","myllyoja","nuottasaari","pateniemi","puoliv‰linkangas","rajakyl‰","toppila","tuira","v‰livainio" ]
+kaupunginosat = [ "h√∂yhty√§","kaakkuri","kaijonharju","kastelli","kaukovainio","keskusta","korvensuora","koskela","kuivasj√§rvi","limingantulli","maikkula","myllyoja","nuottasaari","pateniemi","puoliv√§linkangas","rajakyl√§","toppila","tuira","v√§livainio" ]
 
 class kaenkky_parser(HTMLParser.HTMLParser):
     def __init__(self, verbose=0):
@@ -34,7 +34,7 @@ class kaenkky_parser(HTMLParser.HTMLParser):
                 
 def setup(self):
     nalaka.foo = 'bar'
-    #self.commands['n‰l‰k‰'] = nalaka
+    #self.commands['n√§l√§k√§'] = nalaka
 
 def get_kaenkky(self,url,params=None):
 

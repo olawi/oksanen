@@ -9,11 +9,12 @@ import re
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n
+import ircutil
 
 from matka_aliases import matka_aliases
 
 tie_url = 'http://alk.tiehallinto.fi/cgi-bin/pq9.cgi'
-tie_querystring = 'MISTÄ=%s&MIHIN=%s&NOPEUS=80'
+tie_querystring = 'MISTÃ„=%s&MIHIN=%s&NOPEUS=80'
 
 def setup(self):
     self.commands['matka'] = matka
@@ -25,27 +26,29 @@ def matka(self,e,c):
     params = line.split()[1:]
 
     if len(params) != 2:
-        c.privmsg(e.target(),"käytetään: !matka lähtöpaikka määränpää")
+        c.privmsg(e.target(),"kÃ¤ytetÃ¤Ã¤n: !matka lÃ¤htÃ¶paikka mÃ¤Ã¤rÃ¤npÃ¤Ã¤")
         return
     else:
         bgn = string.capitalize(params[0])
         end = string.capitalize(params[1])
 
-    bgn = re.sub('^ö','Ö',bgn)
-    bgn = re.sub('^ä','Ä',bgn)
-    bgn = re.sub('^å','Ä',bgn)
-    end = re.sub('^ö','Ö',end)
-    end = re.sub('^ä','Ä',end)
-    end = re.sub('^å','Ä',end)
+    bgn = re.sub('^Ã¤','Ã„',bgn)
+    bgn = re.sub('^Ã¶','Ã–',bgn)
+    bgn = re.sub('^Ã¥','Ã…',bgn)
+    end = re.sub('^Ã¤','Ã„',end)
+    end = re.sub('^Ã¶','Ã–',end)
+    end = re.sub('^Ã¥','Ã…',end)
 
     if bgn in matka_aliases:
         bgn = matka_aliases[bgn]
     if end in matka_aliases:
         end = matka_aliases[end]
         
-    if bgn == end : c.privmsg(e.target(),"Yritätkö muka olla hauska?")
+    if bgn == end : c.privmsg(e.target(),"YritÃ¤tkÃ¶ muka olla hauska?")
 
-    req = urllib2.Request(tie_url,tie_querystring%(bgn,end))
+    query = ircutil.recode(tie_querystring%(bgn,end),'latin-1')
+
+    req = urllib2.Request(tie_url,query)
     resp = urllib2.urlopen(req)
     page = resp.read()
 
@@ -54,7 +57,7 @@ def matka(self,e,c):
     dist = m.group(1)
 
     if dist != '0':
-        c.privmsg(e.target(),"välimatka %s - %s on %s km."%(bgn,end,dist))
+        c.privmsg(e.target(),"vÃ¤limatka %s - %s on %s km."%(bgn,end,dist))
     else:
-        c.privmsg(e.target(),"Sori, nyt ei löytynyt tuollaisia paikkakuntia. Liekö olemassakaan..")
+        c.privmsg(e.target(),"Sori, tiehallinto ei lÃ¶ydÃ¤ tuollaisia paikkoja.")
 

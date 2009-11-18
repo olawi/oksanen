@@ -26,7 +26,7 @@ def ruletti(self,e,c):
     else:
         if (time.time() - ruletti.shooters[nick]) < rulettiWAIT :
             if not nick in ruletti.warnings or ruletti.warnings[nick] == 0 :
-                c.privmsg(e.target(),"%s, odotahan vielä, muutkin haluavat kuolla."%nick)
+                c.privmsg(e.target(),"%s, odotahan vielÃ¤, muutkin haluavat kuolla."%nick)
                 ruletti.warnings[nick] = 1
                 return
             else:

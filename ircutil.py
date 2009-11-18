@@ -7,6 +7,8 @@
 
 import string,re
 
+DEBUG = 1
+
 def bold(s):
     return u'\u0002%s\u000f'%s
 
@@ -41,4 +43,36 @@ def wordwrap(text, length_max, trim_whitespace=True):
         rarray.append(text[i:])
 
     return rarray
+
+"""if all else fails"""
+recode_fallback = 'CP1252'
+
+def recode(text, encoding='utf-8',enlist=[]):
+
+    if not enlist:
+        enlist = ['ascii', 'utf-8', 'iso-8859-1', 'iso-8859-15', recode_fallback]
+    out = ''
+
+    for enc in enlist:
+        try: 
+            out = text.decode(enc)
+            if DEBUG > 1:
+                print "in recode success: %s"%enc
+            break
+        except Exception, ex:
+            if DEBUG > 1:
+                print "in recode fail: %s: %s"%(enc,ex)
+
+    if DEBUG > 1:
+        try:
+            print out.encode('utf-8')
+        except Exception, ex:
+            print "in recode print :%s"%ex
+
+    try:
+        text = out.encode(encoding)
+    except:
+        print "in recode: %s"%ex
+
+    return text
 

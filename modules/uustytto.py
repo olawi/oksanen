@@ -41,17 +41,17 @@ def uustytto_callback(self,e,c):
     firstname = realname.split()[0]
 
     if string.lower(firstname) in girlnames :
-        print " TYTTÖ! ----> %s"%realname
+        print " TYTTÃ–! ----> %s"%realname
         if not snick in uustytto_lista:
             if hasSql:
                 cursor = self.db.cursor()
                 sqlquery = """INSERT INTO uustytto (NAME) VALUES (%s); """
                 cursor.execute(sqlquery, [snick] )
             uustytto_lista.append(snick)
-            print " - UUSTYTTÖ -"
+            print " - UUSTYTTÃ– -"
             print uustytto_lista
-            # c.privmsg(e.target(), "UUSTYTTÖ <3")
+            # c.privmsg(e.target(), "UUSTYTTÃ– <3")
         else:
-            # wanhatyttö
-            print " - WANHATYTTÖ -"
+            # wanhatyttÃ¶
+            print " - WANHATYTTÃ– -"
             print uustytto_lista

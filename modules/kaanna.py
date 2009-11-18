@@ -17,7 +17,7 @@ kaanna_kielet = [
     "englanti",
     "ruotsi",
     "viro",
-    "ven‰j‰",
+    "ven√§j√§",
     "ranska",
     "bulgaria",
     "katalaani",
@@ -37,15 +37,15 @@ kaanna_kielet = [
     "puola",
     "portugali",
     "romani",
-    # RIKKI -> "slovakki",
+    # ei toimi -> "slovakki",
     "somali",
     "turkki",
     "kiina"
     ]
 
-kaanna_notsupported = ["ven‰j‰", "bulgaria", "kreikka", "japani", "kiina"] 
+kaanna_notsupported = ["ven√§j√§", "bulgaria", "kreikka", "japani", "kiina"] 
 
-kaanna_usage = "k‰ytet‰‰n esim. ett‰ !k‰‰nn‰ englanti-suomi dictionary ";
+kaanna_usage = "k√§ytet√§√§n esim. ett√§ !k√§√§nn√§ englanti-suomi dictionary ";
 
 kaanna_url = "http://ilmainensanakirja.fi/sanakirja_"
 
@@ -92,7 +92,8 @@ class parser(htmllib.HTMLParser):
             self.output += "%s, "%self.save_end()
 
 def setup(self):
-    self.commands['k‰‰nn‰'] = kaanna
+    self.commands['k√§√§nn√§'] = kaanna
+    self.commands['kaanna'] = kaanna
 
 def kaanna(self,e,c):
 
@@ -119,19 +120,14 @@ def kaanna(self,e,c):
     print "%s %s %s"%(lan1,lan2,word)
 
     if not (lan1 in kaanna_kielet and lan2 in kaanna_kielet) :
-        c.privmsg(e.target(),"%s, sori vaan mutta en min‰ nyt ihan kaikkia kieli‰ osaa!"%nm_to_n(e.source()))
+        c.privmsg(e.target(),"%s, sori vaan mutta en min√§ nyt ihan kaikkia kieli√§ osaa!"%nm_to_n(e.source()))
         return
     
     if (lan2 in kaanna_notsupported) :
-        c.privmsg(e.target(),"%s, sori mutta mun merkistˆill‰ ei voi n‰ytt‰‰ semmosta :/"%nm_to_n(e.source()))
-        return
+        c.privmsg(e.target(),"%s, okei - toivottavasti sulla on utf-8 p√§√§ll√§:"%nm_to_n(e.source()))
                   
     query = "%s-%s/%s"%(lan1,lan2,word)
     
-    # Merkistˆt kuosiin urlia varten
-    query = unicode(query,'ISO-8859-1','ignore')
-    query = query.encode('UTF-8')
-
     fd = urllib.urlopen("%s%s"%(kaanna_url,query))
     page = fd.read()
     fd.close

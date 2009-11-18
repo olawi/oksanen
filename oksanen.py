@@ -19,6 +19,8 @@ except Exception, e:
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
+import ircutil
+
 import sys, imp
 import thread
 import threading
@@ -108,6 +110,9 @@ class Oksanen(SingleServerIRCBot):
         self.do_command(e, e.arguments()[0])
 
     def on_pubmsg(self, c, e):
+
+        e._arguments[0] = ircutil.recode(e._arguments[0])
+
         for func in self.pubhandlers:
             try:
                 func(self, e, c)
@@ -115,7 +120,6 @@ class Oksanen(SingleServerIRCBot):
                 print "ERROR: %s"%ex
 
         line = e.arguments()[0]
-        a = line.split(":", 1)
 
         if line[0] == "!":
             self.do_pubcommand(e)

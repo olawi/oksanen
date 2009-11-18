@@ -18,7 +18,7 @@ class parser(SGMLParser):
         SGMLParser.__init__(self)
         self.buf = ""
         self.output = ""
-        self.entitydefs.update({'auml':'ä','ouml':'ö','aring':'å','Auml':'Ä','Ouml':'Ö','Aring':'Å','nbsp':' ',})
+        self.entitydefs.update({'auml':'Ã¤','ouml':'Ã¶','aring':'Ã¥','Auml':'Ã„','Ouml':'Ã–','Aring':'Ã…','nbsp':' ',})
         
     def handle_data(self, data):
         self.buf += data
@@ -73,7 +73,7 @@ def urlhandler(self, e, c):
         cursor.execute("""SELECT USER, DATE FROM url WHERE URI = %s;""", [uri])
         for row in cursor.fetchall():
             if nick != row[0]:
-                c.privmsg(e.target(), "%s - Wanha! Ensimmäisenä mainitsi %s %s"%(nick,row[0],row[1]))
+                c.privmsg(e.target(), "%s - Wanha! EnsimmÃ¤isenÃ¤ mainitsi %s %s"%(nick,row[0],row[1]))
                 return #wanha
             
         command = """INSERT INTO url (USER, URI, TITLE) VALUES (%s, %s, %s); """

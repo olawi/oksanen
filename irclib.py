@@ -380,7 +380,8 @@ class ServerConnection(Connection):
         self.connected = 0  # Not connected yet.
         self.socket = None
         self.ssl = None
-        self.output_encoding = 'UTF-8'
+        """output_encoding not used so far"""
+        self.output_encoding = 'ISO-8859-1'
         self.line_maxlen = 396
 
     def connect(self, server, port, nickname, password=None, username=None,
@@ -768,12 +769,14 @@ class ServerConnection(Connection):
     def privmsg(self, target, text):
         """Send a PRIVMSG command."""
         if len(text) < self.line_maxlen:
-            self.send_encoded("PRIVMSG %s :%s" % (target, text))
+            #self.send_encoded("PRIVMSG %s :%s" % (target, text))
+            self.send_raw("PRIVMSG %s :%s" % (target, text))
             return
         """long line"""
         lines = ircutil.wordwrap(text,self.line_maxlen)
         for line in lines:
-            self.send_encoded("PRIVMSG %s :%s" % (target, line))
+            #self.send_encoded("PRIVMSG %s :%s" % (target, text))
+            self.send_raw("PRIVMSG %s :%s" % (target, line))
             
     def privmsg_many(self, targets, text):
         """Send a PRIVMSG command to multiple targets."""

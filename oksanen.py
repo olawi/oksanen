@@ -219,8 +219,8 @@ class Oksanen(SingleServerIRCBot):
         nick = nm_to_n(e.source())
         c = self.connection
 
+        e._arguments[0] = ircutil.recode(e._arguments[0])
         line = e.arguments()[0]
-        line = ircutil.recode(line)
 
         if is_admin(nick) and cmd == "reset":
             print >> sys.stderr, "cmd: RESET modules"

@@ -62,13 +62,17 @@ def urlhandler(self, e, c):
         return
     
     nick = nm_to_n(e.source())
-    page = fd.read(1024)
+    page = fd.read()
     fd.close()
 
     p = parser()
-    p.feed(page)
 
-    pagetitle = recode(p.output)
+    try :
+        p.feed(page)
+        pagetitle = recode(p.output)
+    except:
+        pagetitle = ''
+        print "url.py: parseri kosahti, jatketaan..."
 
     if hasSql:
         cursor = self.db.cursor()

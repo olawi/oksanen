@@ -11,7 +11,7 @@ from irclib import nm_to_n
 
 DEBUG = 1
 
-konni_re = r'[^!]\bk(ö|ä)nn(i|ä)|korks|tölks|reub|\briipas|\bsnuu|\bolus?(en|t+a|el)|\bkal(i|j)+a?|\bbaari'
+konni_re = r'[^!]\bk(ö|ä)nn(i|ä)|korks|tölks|reub|\briipa?s|\bsnuu|\bolus?(en|t+a|el)|\bkal(i|j)+a?|\bbaari'
 nukku_re = r'\bnuq|\bnuk(s|k)u|\böitä|\böö+t'
 menox_re = r'\blähd?(en|tis|e?tään)|\bmen(in|en|is|nää|o(x|ks))|\bmeen'
 

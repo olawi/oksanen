@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import urllib
+import urllib2
 import HTMLParser
 
 import string
@@ -16,13 +16,15 @@ kaenkky_url = 'http://www.kaenkky.com/txt/'
                 
 def setup(self):
     self.commands['näläkä'] = nalaka
+    self.commands['nalaka'] = nalaka
 
 def get_kaenkky(self,query):
 
-    fd = urllib.urlopen(kaenkky_url+query)
-    page = fd.read()
+    fd = urllib2.urlopen(kaenkky_url+query)
+    data = fd.read()
     fd.close()
 
+    page = data.decode('iso-8859-15')
     lines = string.split(page,'\n')
     results = []
 

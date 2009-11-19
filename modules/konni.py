@@ -33,7 +33,7 @@ def konni_track(self, e, c):
     """seuraa regexpin mukaan"""
     """hox: no need to compile the regexps, they are cached anyway"""
 
-    line = ircutil.recode(e.arguments()[0])
+    line = e.arguments()[0]
     m = re.search('%s|%s|%s'%(konni_re,nukku_re,menox_re),line,re.I)
     
     if not m:

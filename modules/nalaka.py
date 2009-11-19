@@ -10,57 +10,66 @@ import random
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n
+from ircutil import bold, recode
 
-kaenkky_url = 'http://www.kaenkky.com/?'
-query_random = "p=k&id=-1"
-query_kaupunginosa = "p=kht&nimi=&kaupunginosa=%s&rating=&elossa=2&submit=+Hae+ruokapaikat+"
-query_keyword = "p=kht&nimi=%s&kaupunginosa=&rating=&elossa=1&submit=+Hae+ruokapaikat+"
-
-kaupunginosat = [ "höyhtyä","kaakkuri","kaijonharju","kastelli","kaukovainio","keskusta","korvensuora","koskela","kuivasjärvi","limingantulli","maikkula","myllyoja","nuottasaari","pateniemi","puolivälinkangas","rajakylä","toppila","tuira","välivainio" ]
-
-class kaenkky_parser(HTMLParser.HTMLParser):
-    def __init__(self, verbose=0):
-        self.output = ''
-        HTMLParser.HTMLParser.__init__(self)
-
-    def handle_starttag(self,tag,attrs):
-        if tag == 'meta':
-            if ('name','description') in attrs:
-                for a in attrs:
-                    if a[0] == 'content':
-                        self.output = string.join(string.split(a[1]),' ')
-                        self.output = self.output.split('/')[-1]
-                        self.output = string.join(self.output.split(),' ')
+kaenkky_url = 'http://www.kaenkky.com/txt/'
                 
 def setup(self):
-    nalaka.foo = 'bar'
-    #self.commands['näläkä'] = nalaka
+    self.commands['näläkä'] = nalaka
 
-def get_kaenkky(self,url,params=None):
+def get_kaenkky(self,query):
 
-    fd = urllib.urlopen(url,params)
+    fd = urllib.urlopen(kaenkky_url+query)
     page = fd.read()
     fd.close()
-    
-    p = kaenkky_parser()
-    p.feed(page)
-    print page
-    m = re.search('(Avoinna viel.*?)\<',page)
 
-    if m: p.output += " - %s"%m.group(1)
-    
-    return p.output
+    lines = string.split(page,'\n')
+    results = []
+
+    for l in lines:
+        print l
+        m = re.findall(r'([^;]*?);',l)
+        if m :
+            results.append(m)
+
+    return results
     
 def nalaka(self,e,c):
 
     line = e.arguments()[0]
-    c = self.connection
-    
-    queryparams = { 'p':'k', 'id':-1 }
+    query = string.join(line.split()[1:],' ')
 
-    kama = get_kaenkky(self,kaenkky_url,queryparams)
+    if query:
+        query = "?s=%s"%query
 
+    kama = get_kaenkky(self,recode(query,'latin-1'))
 
-# testing
-#queryparams = { 'p':'k', 'id':-1 }
-#print get_kaenkky(None,"%sp=kh"%(kaenkky_url))
+    outstr = ""
+    try :
+        for k in kama:
+            outstr += "%s - %s: %s, avoinna: %s " % (bold(k[1]),k[2],k[4],k[7])
+        c.privmsg(e.target(),outstr)
+    except:
+        c.privmsg(e.target(),"Nyt ei kuule löytynyt mitään.")
+        
+# from www.kaenkky.com :
+#
+# palautuvat kentät / rivi (eroteltuna puolipisteellä):
+# 0  id (voit käyttää linkitykseen: www.kaenkky.com/?p=k&id=[id])
+# 1  nimi
+# 2  lyhyesti
+# 3  aliakset
+# 4  yhteystiedot
+# 5  puhelinnumero
+# 6  kategoria
+# 7  aukioloajat tänään
+# 8  hintataso
+# 9  visa electron (1 kyllä, 0 ei, -1 ei tietoa)
+# 10 kanta-asiakaspassi (1 kyllä, 0 ei, -1 ei tietoa)
+# 11 lounassetelit (1 kyllä, 0 ei, -1 ei tietoa)
+# 12 panoulu kuuluu (1 kyllä, 0 ei, -1 ei tietoa)
+# 13 avoinna juuri nyt (1 kyllä, 0 ei)
+# 14 kuva #1 nimi (jos ei kuvaa, niin ei_kuvaa.jpg) (url http://kaenkky.com/kuvat/kaenkkylae/[nimi])
+# 15 kuva #2 nimi (jos ei kuvaa, niin ei_kuvaa.jpg) (url http://kaenkky.com/kuvat//kaenkkylae/[nimi])
+# 16 kotiinkuljetus (1 kyllä, 0 ei, -1 ei tietoa)
+

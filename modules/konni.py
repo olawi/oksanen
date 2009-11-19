@@ -9,19 +9,32 @@ import ircutil
 
 from irclib import nm_to_n
 
-konni_re = r'korks|tölks|[^!]\bkönni|\briipas|\bsnuu|\bolus?(en|tta|el)|\bkal(i|j)+a?|\bbaari|\bnuq|\bnukku|\böitä|\blähd?[en|tis]|\bmen(e|i)+n|\bmeen'
+DEBUG = 1
+
+konni_re = r'[^!]\bk(ö|ä)nn(i|ä)|korks|tölks|reub|\briipas|\bsnuu|\bolus?(en|t+a|el)|\bkal(i|j)+a?|\bbaari'
+nukku_re = r'\bnuq|\bnuk(s|k)u|\böitä|\böö+t'
+menox_re = r'\blähd?(en|tis|e?tään)|\bmen(in|en|is|nää|o(x|ks))|\bmeen'
 
 def setup(self):
+
     self.pubhandlers.append(konni_track)
     self.commands['könniset'] = konni
     self.commands['ryyppyseura'] = konni
-    konni.konniset = {}
+    try :
+        konni.konniset = self.moduledata['konni']
+    except:
+        konni.konniset = {}
 
-def konni_track(self,e,c):
+def terminate(self):
+    """save data"""
+    self.moduledata['konni'] = konni.konniset
+    
+def konni_track(self, e, c):
     """seuraa regexpin mukaan"""
+    """hox: no need to compile the regexps, they are cached anyway"""
 
     line = ircutil.recode(e.arguments()[0])
-    m = re.search(konni_re,line,re.I|re.U)
+    m = re.search('%s|%s|%s'%(konni_re,nukku_re,menox_re),line,re.I)
     
     if not m:
         return
@@ -31,7 +44,7 @@ def konni_track(self,e,c):
     
     konni.konniset[nick] = [now,line]
 
-    """liian vanhat pois"""
+    """remove old data"""
     ke = konni.konniset.keys()
     for k in ke:
         if (now - konni.konniset[k][0]) > timedelta (hours = 8):
@@ -39,22 +52,27 @@ def konni_track(self,e,c):
 
     print "konni updated : %s"%konni.konniset[nick]
     
-def konni(self,e,c):
+def konni(self, e, c):
     """ilmoittaa viimeisimmän matchin nickin perusteella"""
 
     line = e.arguments()[0]
     who = string.join(line.split()[1:], " ")
-
+    
     now = datetime.now()
+    nlist = []
 
     if len(who) < 1:
-        nl = []
+        if DEBUG :
+            print repr(konni.konniset)
         """random line from the past four hours"""
         for k, v in konni.konniset.iteritems():
-            if (now - v[0]) < timedelta (hours = 3):
-                nl.append(k)
-        if len(nl) > 0:
-            who = random.choice(nl)
+            if (now - v[0]) < timedelta (hours = 4):
+                """for random, only konni counts"""
+                if re.search(konni_re,v[1],re.I):
+                    nlist.append(k)
+                    
+        if len(nlist) > 0:
+            who = random.choice(nlist)
         else:
             c.privmsg(e.target(),"eipä kyllä kukaan taida tehdä mitään jännää...")
             return
@@ -62,5 +80,17 @@ def konni(self,e,c):
     if who in konni.konniset:
         data = konni.konniset[who]
         c.privmsg(e.target(),"%02d:%02d <%s> %s"%(data[0].hour,data[0].minute,who,data[1]))
+        return
+    
+    """try to match in all of data[1]"""
+    nlist = []
+    for k, v in konni.konniset.iteritems():
+        if re.search(who,v[1],re.I):
+            nlist.append(k)
+            
+    if len(nlist) > 0:
+        who = random.choice(nlist)
+        data = konni.konniset[who]
+        c.privmsg(e.target(),"%02d:%02d <%s> %s"%(data[0].hour,data[0].minute,who,data[1]))   
     else:
         c.privmsg(e.target(),"eipä ole %s:ta kuulunut viime aikoina"%who)

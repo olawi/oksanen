@@ -24,14 +24,15 @@ import ircutil
 import sys, imp
 import thread
 import threading
+import traceback
 
 home = os.getcwd()
 sys.path.append("./modules")
 
-DEBUG=1
+DEBUG = 1
 
 def debug(text):
-    if DEBUG==1:
+    if DEBUG:
         print text
 
 def is_admin(nick):
@@ -46,6 +47,7 @@ class Oksanen(SingleServerIRCBot):
         self.channel = channel
         self.timer = TimerManager()
         self.setup()
+        print self.modules
         print self.commands
         print self.pubhandlers
         print self.joinhandlers
@@ -56,22 +58,55 @@ class Oksanen(SingleServerIRCBot):
             self.db = MySQLdb.connect(host=sqlparams[0], user=sqlparams[1], passwd=sqlparams[2], db = sqlparams[3], charset = "utf8", use_unicode = True)
 
     def setup(self):
+        """setup is also called from self.reset()"""
+        self.modules = []
+        self.moduledata =  {}
+        self.whoisinfo = {}
+
+        self.reload()
+
+    def reset(self):
+        """reset clears all module data and buffers and resets modules
+        after calling self.terminate() on modules"""
+        try:
+            for module in self.modules:
+                if hasattr(module, 'terminate'): 
+                    module.terminate(self)
+        except:
+            print >> sys.stderr, "No running modules found, resetting.."
+
+        self.setup()
+        
+    def reload(self):
+        """reload calls self.terminate on all modules and reloads them"""
+        
         self.commands = {}
         self.pubhandlers = []
         self.joinhandlers = []
-        self.whoisinfo = {}
         self.timerevents = []
         self.whoiscallbacks = []
 
         self.timer.stop()
-        
+
+        """call self.terminate on modules, if any"""
+        try:
+            for module in self.modules:
+                """some modules already loaded"""
+                if hasattr(module, 'terminate'):
+                    module.terminate(self)
+        except:
+            """No modules found"""
+            print >> sys.stderr, "No currently running modules, reloading..."
+
+        """(clear and re-)load modules"""
+        self.modules = []
         filenames = []
 
         for fn in os.listdir(os.path.join(home, 'modules')): 
             if (fn[-2:] == "py"):
                 filenames.append(os.path.join(home, 'modules', fn ))
         
-        modules = []
+        modulenames = []
         for filename in filenames: 
             name = os.path.basename(filename)[:-3]
 
@@ -83,13 +118,14 @@ class Oksanen(SingleServerIRCBot):
                 if hasattr(module, 'setup'): 
                     module.setup(self)
 
-                modules.append(name)
+                self.modules.append(module)
+                modulenames.append(name)
 
         for timerevent in self.timerevents:
             self.timer.add_operation(timerevent[0], timerevent[1])
         
-        if modules: 
-            print >> sys.stderr, 'Registered modules:', ', '.join(modules)
+        if modulenames: 
+            print >> sys.stderr, 'Registered modules:', ', '.join(modulenames)
         else: 
             print >> sys.stderr, "Warning: Couldn't find any modules"
 
@@ -104,8 +140,9 @@ class Oksanen(SingleServerIRCBot):
             try:
                 func(self, e, c)
             except Exception, ex:
-                print "ERROR: %s"%ex
-
+                print "ERROR (on_join): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
+                
     def on_privmsg(self, c, e):
         self.do_command(e, e.arguments()[0])
 
@@ -117,7 +154,8 @@ class Oksanen(SingleServerIRCBot):
             try:
                 func(self, e, c)
             except Exception, ex:
-                print "ERROR: %s"%ex
+                print "ERROR (on_pubmsg): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
 
         line = e.arguments()[0]
 
@@ -159,8 +197,9 @@ class Oksanen(SingleServerIRCBot):
                 func = self.whoiscallbacks.pop()
                 func(self,e,c)
             except Exception, ex:
-                print "ERROR: %s"%ex
-                
+                print "ERROR (on_endofwhois): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
+
     def do_pubcommand(self, e):
         nick = nm_to_n(e.source())
         c = self.connection
@@ -173,7 +212,8 @@ class Oksanen(SingleServerIRCBot):
                 func = self.commands[cmd]
                 func(self, e, c)
             except Exception, e:
-                print "ERROR: %s"%e
+                print "ERROR (do_pubcommand): %s"%e
+                if DEBUG > 1: traceback.print_stack()
 
     def do_command(self, e, cmd):
         nick = nm_to_n(e.source())
@@ -182,9 +222,15 @@ class Oksanen(SingleServerIRCBot):
         line = e.arguments()[0]
         line = ircutil.recode(line)
 
-        # for now
-        if is_admin(nick) and cmd == "reload":
-            self.setup()
+        if is_admin(nick) and cmd == "reset":
+            print >> sys.stderr, "cmd: RESET modules"
+            self.reset()
+            c.notice(nick, cmd)
+            
+        elif is_admin(nick) and cmd == "reload":
+            print >> sys.stderr, "cmd: RELOAD modules"
+            self.reload()
+            c.notice(nick, cmd)
             
         elif cmd == "stats":
             for chname, chobj in self.channels.items():
@@ -199,6 +245,7 @@ class Oksanen(SingleServerIRCBot):
                 voiced = chobj.voiced()
                 voiced.sort()
                 c.notice(nick, "Voiced: " + ", ".join(voiced))
+
         elif is_admin(nick) and line[0] == "!" and len(line) > 1:
             parts = line[1:].split()
             cmd = parts[0].lower()
@@ -208,7 +255,9 @@ class Oksanen(SingleServerIRCBot):
                 e._target = e.source()
                 func(self, e, c)
             except Exception, e:
-                print "ERROR: %s"%e
+                print "ERROR (do_command): %s"%e
+                if DEBUG > 1: traceback.print_stack()
+
         else:
             c.notice(nick, "En tajua: " + cmd)
 
@@ -226,6 +275,7 @@ class TimerOperation(threading._Timer):
                     self.function(*self.args, **self.kwargs)
                 except Exception, e:
                     print "ERROR (timer): %s"%e
+                    if DEBUG > 1: traceback.print_stack()
             else:
                 return
             self.finished.set()

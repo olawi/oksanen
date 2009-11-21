@@ -6,6 +6,7 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 import string
 from oksanen import hasSql
 from time import strftime, localtime
+import datetime
 
 def load_nick_table(cursor):
     cursor.execute("SELECT user FROM user")
@@ -51,6 +52,31 @@ def stats_part(self,e,c):
 
         cursor.close()        
 
+def timediff(first,second):
+    first = time.strptime(first, "%Y-%m-%d %H:%M:%S")
+    first = datetime.datetime(first[0],first[1],first[2],first[3],first[4],first[5])
+    second = time.strptime(second, "%Y-%m-%d %H:%M:%S")
+    second = datetime.datetime(second[0],second[1],second[2],second[3],second[4],second[5])
+    
+    timedelta = first-second
+
+    output = ""
+    if (timedelta.days > 0):
+        if (timedelta.days > 1):
+            output += "%s päivää ja " %(timedelta.days)
+        else:
+            output += "yhden päivän ja "
+
+    m, s = divmod(timedelta.seconds, 60)
+    h, m = divmod(m, 60)
+    if (h > 0):
+        output += "%s tuntia " %(h)
+    if (m > 0):
+        output += "%s minuuttia " %(m)
+
+    output += "%s sekuntia " %(s)
+    return output
+        
 def stats(self, e, c):
     if hasSql:
 
@@ -61,8 +87,10 @@ def stats(self, e, c):
         nick = nm_to_n(e.source())
 
         cursor.execute("SELECT joins, join_date, averagetime, NOW() from user WHERE user = %s;", [nick])
-        joins, join_date, averagetime, time = cursor.fetchone()
-        print joins, join_date, averagetime, time
+        joins, join_date, averagetime, time_now = cursor.fetchone()
+        output = "%s oli kanavalla %s" %(nick,timediff(join_date,time_now))
+        
+        print output
 
         if not nick in stats.nicks:
             cursor.execute("INSERT INTO user (user) VALUES(%s);", [nick])

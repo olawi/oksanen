@@ -54,9 +54,10 @@ def stats_part(self,e,c):
 
 def timediff(first,second): 
     timedelta = first-second
-
+    elementcount = 0
     output = ""
     if (timedelta.days > 0):
+        elementcount += 1
         if (timedelta.days > 1):
             output += "%s päivää ja " %(timedelta.days)
         else:
@@ -65,11 +66,27 @@ def timediff(first,second):
     m, s = divmod(timedelta.seconds, 60)
     h, m = divmod(m, 60)
     if (h > 0):
-        output += "%s tuntia " %(h)
+        elementcount += 1
+        if (h > 1):
+            output += "%s tuntia " %(h)
+        else:
+            output += "yhden tunnin "
     if (m > 0):
-        output += "%s minuuttia " %(m)
-
-    output += "%s sekuntia " %(s)
+        if (elementcount > 0 and s == 0):
+            output += "ja "
+        elementcount += 1
+        if (m > 1):
+            output += "%s minuuttia " %(m)
+        else:
+            output += "yhden minuutin "
+    
+    if (elementcount > 0):
+        output += "ja "
+    
+    if (s > 1):
+        output += "%s sekuntia " %(s)
+    else:
+        output += "sekunnin"
     return output
         
 def stats(self, e, c):

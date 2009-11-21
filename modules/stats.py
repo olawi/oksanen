@@ -75,7 +75,14 @@ def stats_join(self,e,c):
         if not nick in stats.nicks:
             cursor.execute("INSERT INTO user (user) VALUES(%s);", [nick])
             stats.nicks.append(nick)
-
+        else:
+            cursor.execute("SELECT said, joins, join_date, averagetime, part_time from user WHERE user = %s;", [nick])
+            said, joins, join_date, averagetime, part_date = cursor.fetchone()
+            if (joins > 1):
+                output = "Tervetuloa %s! Olit viimeksi kanavalla %s" %(nick,timediff(join_date,part_date))
+                output += " - keskim‰‰rin olet ollut %s" %(seconds_to_string(averagetime))
+                output += "| %s rivi‰ per kerta." %(said/joins)
+                c.privmsg(stats.channel, output)
         cursor.execute("UPDATE user SET joins = joins + 1, join_date = NOW() WHERE user = %s;", [nick])
         cursor.close()
 
@@ -93,14 +100,9 @@ def stats_part(self,e,c):
         cursor.execute("SELECT joins, join_date, averagetime, NOW() from user WHERE user = %s;", [nick])
         joins, join_date, averagetime, time_now = cursor.fetchone()
 
-
         timedelta = time_now-join_date
         timeonchannel = timedelta.seconds + (timedelta.days*86400)
         averagetime = (((joins-1)*averagetime)+timeonchannel)/joins
-        
-        output = "%s oli kanavalla %s" %(nick,timediff(join_date,time_now))
-        output += " - keskim‰‰rin %s." %(seconds_to_string(averagetime))
-        c.privmsg(stats.channel, output)
         
         cursor.execute("UPDATE user SET averagetime = %s, parts = parts + 1, part_date = NOW() WHERE user = %s;", [averagetime,nick])
 

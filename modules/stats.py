@@ -8,18 +8,10 @@ from oksanen import hasSql
 from time import strftime, localtime
 import datetime
 
-def timediff(first,second): 
-    timedelta = second-first
+def seconds_to_string(seconds):
     elementcount = 0
     output = ""
-    if (timedelta.days > 0):
-        elementcount += 1
-        if (timedelta.days > 1):
-            output += "%s p‰iv‰‰ ja " %(timedelta.days)
-        else:
-            output += "yhden p‰iv‰n ja "
-
-    m, s = divmod(timedelta.seconds, 60)
+    m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
     if (h > 0):
         elementcount += 1
@@ -43,6 +35,20 @@ def timediff(first,second):
         output += "%s sekuntia " %(s)
     else:
         output += "sekunnin"
+    
+    return output
+
+def timediff(first,second): 
+    timedelta = second-first
+    output = ""
+    if (timedelta.days > 0):
+        if (timedelta.days > 1):
+            output += "%s p‰iv‰‰ ja " %(timedelta.days)
+        else:
+            output += "yhden p‰iv‰n ja "
+
+    output += seconds_to_string(timedelta.seconds)
+
     return output
 
 def load_nick_table(cursor):
@@ -86,12 +92,15 @@ def stats_part(self,e,c):
 
         cursor.execute("SELECT joins, join_date, averagetime, NOW() from user WHERE user = %s;", [nick])
         joins, join_date, averagetime, time_now = cursor.fetchone()
-        output = "%s oli kanavalla %s" %(nick,timediff(join_date,time_now))
-        c.privmsg(stats.channel, output)
+
 
         timedelta = time_now-join_date
         timeonchannel = timedelta.seconds + (timedelta.days*86400)
         averagetime = (((joins-1)*averagetime)+timeonchannel)/joins
+        
+        output = "%s oli kanavalla %s" %(nick,timediff(join_date,time_now))
+        output += " - keskim‰‰rin %s." %(seconds_to_string(averagetime))
+        c.privmsg(stats.channel, output)
         
         cursor.execute("UPDATE user SET averagetime = %s, parts = parts + 1, part_date = NOW() WHERE user = %s;", [averagetime,nick])
 

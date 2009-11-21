@@ -91,7 +91,7 @@ def stats_part(self,e,c):
         timeonchannel = timedelta.seconds + (timedelta.days*86400)
         averagetime = (((joins-1)*averagetime)+timeonchannel)/joins
         
-        cursor.execute("UPDATE user SET averagetime = averagetime, parts = parts + 1, part_date = NOW() WHERE user = %s;", [nick])
+        cursor.execute("UPDATE user SET averagetime = %s, parts = parts + 1, part_date = NOW() WHERE user = %s;", [averagetime,nick])
 
         cursor.close()        
 

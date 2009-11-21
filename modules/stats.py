@@ -76,7 +76,7 @@ def stats_join(self,e,c):
             cursor.execute("INSERT INTO user (user) VALUES(%s);", [nick])
             stats.nicks.append(nick)
         else:
-            cursor.execute("SELECT said, joins, join_date, averagetime, part_time from user WHERE user = %s;", [nick])
+            cursor.execute("SELECT said, joins, join_date, averagetime, part_date from user WHERE user = %s;", [nick])
             said, joins, join_date, averagetime, part_date = cursor.fetchone()
             if (joins > 1):
                 output = "Tervetuloa %s! Olit viimeksi kanavalla %s" %(nick,timediff(join_date,part_date))

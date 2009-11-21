@@ -51,6 +51,7 @@ class Oksanen(SingleServerIRCBot):
         print self.commands
         print self.pubhandlers
         print self.joinhandlers
+        print self.parthandlers
 
         self.nickname = nickname
 
@@ -83,6 +84,7 @@ class Oksanen(SingleServerIRCBot):
         self.commands = {}
         self.pubhandlers = []
         self.joinhandlers = []
+        self.parthandlers = []
         self.timerevents = []
         self.whoiscallbacks = []
 
@@ -137,6 +139,14 @@ class Oksanen(SingleServerIRCBot):
 
     def on_join(self, c , e):
         for func in self.joinhandlers:
+            try:
+                func(self, e, c)
+            except Exception, ex:
+                print "ERROR (on_join): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
+
+    def on_part(self, c , e):
+        for func in self.parthandlers:
             try:
                 func(self, e, c)
             except Exception, ex:

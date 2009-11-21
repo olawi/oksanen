@@ -32,7 +32,7 @@ def seconds_to_string(seconds):
         output += "ja "
     
     if (s > 1):
-        output += "%s sekuntia " %(s)
+        output += "%s sekuntia" %(s)
     else:
         output += "sekunnin"
     

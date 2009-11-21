@@ -512,7 +512,7 @@ class ServerConnection(Connection):
 
         for line in lines:
             if DEBUG:
-                print "FROM SERVER:", line
+                print "\033[0;32mFROM SERVER:\033[m", line
 
             if not line:
                 continue

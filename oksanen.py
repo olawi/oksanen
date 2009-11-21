@@ -117,7 +117,7 @@ class Oksanen(SingleServerIRCBot):
             try: 
                 module = imp.load_source(name, filename)
             except Exception, e: 
-                print >> sys.stderr, "Error loading %s: %s (in oksanen.py)" % (name, e)
+                print >> sys.stderr, "\033[31mError\033[m loading %s: %s (in oksanen.py)" % (name, e)
             else: 
                 if hasattr(module, 'setup'): 
                     module.setup(self)
@@ -144,7 +144,7 @@ class Oksanen(SingleServerIRCBot):
             try:
                 func(self, e, c)
             except Exception, ex:
-                print "ERROR (on_join): %s"%ex
+                print "\033[31mERROR\033[m (on_join): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
 
     def on_part(self, c , e):
@@ -152,7 +152,7 @@ class Oksanen(SingleServerIRCBot):
             try:
                 func(self, e, c)
             except Exception, ex:
-                print "ERROR (on_join): %s"%ex
+                print "\033[31mERROR\033[m (on_part): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
                 
     def on_quit(self, c , e):
@@ -160,7 +160,7 @@ class Oksanen(SingleServerIRCBot):
             try:
                 func(self, e, c)
             except Exception, ex:
-                print "ERROR (on_join): %s"%ex
+                print "\033[31mERROR\033[m (on_quit): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
                 
     def on_privmsg(self, c, e):
@@ -174,7 +174,7 @@ class Oksanen(SingleServerIRCBot):
             try:
                 func(self, e, c)
             except Exception, ex:
-                print "ERROR (on_pubmsg): %s"%ex
+                print "\033[31mERROR\033[m (on_pubmsg): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
 
         line = e.arguments()[0]
@@ -217,7 +217,7 @@ class Oksanen(SingleServerIRCBot):
                 func = self.whoiscallbacks.pop()
                 func(self,e,c)
             except Exception, ex:
-                print "ERROR (on_endofwhois): %s"%ex
+                print "\033[31mERROR\033[m (on_endofwhois): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
 
     def do_pubcommand(self, e):
@@ -232,7 +232,7 @@ class Oksanen(SingleServerIRCBot):
                 func = self.commands[cmd]
                 func(self, e, c)
             except Exception, e:
-                print "ERROR (do_pubcommand): %s"%e
+                print "\033[31mERROR\033[m (do_pubcommand): %s"%e
                 if DEBUG > 1: traceback.print_stack()
 
     def do_command(self, e, cmd):
@@ -275,7 +275,7 @@ class Oksanen(SingleServerIRCBot):
                 e._target = e.source()
                 func(self, e, c)
             except Exception, e:
-                print "ERROR (do_command): %s"%e
+                print "\033[31mERROR\033[m (do_command): %s"%e
                 if DEBUG > 1: traceback.print_stack()
 
         else:
@@ -294,7 +294,7 @@ class TimerOperation(threading._Timer):
                 try:
                     self.function(*self.args, **self.kwargs)
                 except Exception, e:
-                    print "ERROR (timer): %s"%e
+                    print "\033[31mERROR\033[m (timer): %s"%e
                     if DEBUG > 1: traceback.print_stack()
             else:
                 return

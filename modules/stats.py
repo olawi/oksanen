@@ -53,7 +53,8 @@ def load_nick_table(cursor):
 def setup(self):
     self.pubhandlers.append(stats)
     self.joinhandlers.append(stats_join)
-    self.joinhandlers.append(stats_part)
+    self.parthandlers.append(stats_part)
+    self.quithandlers.append(stats_part)
     stats.nicks = []
 
 def stats_join(self,e,c):

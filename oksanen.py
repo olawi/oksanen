@@ -47,11 +47,12 @@ class Oksanen(SingleServerIRCBot):
         self.channel = channel
         self.timer = TimerManager()
         self.setup()
-        print self.modules
-        print self.commands
-        print self.pubhandlers
-        print self.joinhandlers
-        print self.parthandlers
+        print "Modules:",self.modules
+        print "Commands:",self.commands
+        print "Pub Handlers:",self.pubhandlers
+        print "Join Handlers:",self.joinhandlers
+        print "Part Handlers:",self.parthandlers
+        print "Quit Handlers:",self.quithandlers
 
         self.nickname = nickname
 
@@ -85,6 +86,7 @@ class Oksanen(SingleServerIRCBot):
         self.pubhandlers = []
         self.joinhandlers = []
         self.parthandlers = []
+        self.quithandlers = []
         self.timerevents = []
         self.whoiscallbacks = []
 
@@ -147,6 +149,14 @@ class Oksanen(SingleServerIRCBot):
 
     def on_part(self, c , e):
         for func in self.parthandlers:
+            try:
+                func(self, e, c)
+            except Exception, ex:
+                print "ERROR (on_join): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
+                
+    def on_quit(self, c , e):
+        for func in self.quithandlers:
             try:
                 func(self, e, c)
             except Exception, ex:

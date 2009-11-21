@@ -118,7 +118,7 @@ def stats(self, e, c):
         nick = nm_to_n(e.source())
 
         if not nick in stats.nicks:
-            cursor.execute("INSERT INTO user (user) VALUES(%s);", [nick])
+            cursor.execute("INSERT INTO user (user,joins) VALUES(%s,1);", [nick])
             stats.nicks.append(nick)
         
         line = e.arguments()[0]

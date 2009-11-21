@@ -8,6 +8,43 @@ from oksanen import hasSql
 from time import strftime, localtime
 import datetime
 
+def timediff(first,second): 
+    timedelta = first-second
+    elementcount = 0
+    output = ""
+    if (timedelta.days > 0):
+        elementcount += 1
+        if (timedelta.days > 1):
+            output += "%s päivää ja " %(timedelta.days)
+        else:
+            output += "yhden päivän ja "
+
+    m, s = divmod(timedelta.seconds, 60)
+    h, m = divmod(m, 60)
+    if (h > 0):
+        elementcount += 1
+        if (h > 1):
+            output += "%s tuntia " %(h)
+        else:
+            output += "yhden tunnin "
+    if (m > 0):
+        if (elementcount > 0 and s == 0):
+            output += "ja "
+        elementcount += 1
+        if (m > 1):
+            output += "%s minuuttia " %(m)
+        else:
+            output += "yhden minuutin "
+    
+    if (elementcount > 0):
+        output += "ja "
+    
+    if (s > 1):
+        output += "%s sekuntia " %(s)
+    else:
+        output += "sekunnin"
+    return output
+
 def load_nick_table(cursor):
     cursor.execute("SELECT user FROM user")
     for row in cursor.fetchall():
@@ -46,49 +83,18 @@ def stats_part(self,e,c):
             return
 
         cursor.execute("SELECT joins, join_date, averagetime, NOW() from user WHERE user = %s;", [nick])
-        joins, join_date, averagetime, time = cursor.fetchone()
-            
-        cursor.execute("UPDATE user SET parts = parts + 1, part_date = NOW() WHERE user = %s;", [nick])
+        joins, join_date, averagetime, time_now = cursor.fetchone()
+        output = "%s oli kanavalla %s" %(nick,timediff(join_date,time_now))
+        c.privmsg(e.target(), output)
+
+        timedelta = join_date-time_now
+        timeonchannel = timedelta.seconds + (timedelta.days*86400)
+        averagetime = (((joins-1)*averagetime)+timeonchannel)/joins
+        
+        cursor.execute("UPDATE user SET averagetime = averagetime, parts = parts + 1, part_date = NOW() WHERE user = %s;", [nick])
 
         cursor.close()        
 
-def timediff(first,second): 
-    timedelta = first-second
-    elementcount = 0
-    output = ""
-    if (timedelta.days > 0):
-        elementcount += 1
-        if (timedelta.days > 1):
-            output += "%s päivää ja " %(timedelta.days)
-        else:
-            output += "yhden päivän ja "
-
-    m, s = divmod(timedelta.seconds, 60)
-    h, m = divmod(m, 60)
-    if (h > 0):
-        elementcount += 1
-        if (h > 1):
-            output += "%s tuntia " %(h)
-        else:
-            output += "yhden tunnin "
-    if (m > 0):
-        if (elementcount > 0 and s == 0):
-            output += "ja "
-        elementcount += 1
-        if (m > 1):
-            output += "%s minuuttia " %(m)
-        else:
-            output += "yhden minuutin "
-    
-    if (elementcount > 0):
-        output += "ja "
-    
-    if (s > 1):
-        output += "%s sekuntia " %(s)
-    else:
-        output += "sekunnin"
-    return output
-        
 def stats(self, e, c):
     if hasSql:
 
@@ -97,12 +103,6 @@ def stats(self, e, c):
             load_nick_table(cursor)
 
         nick = nm_to_n(e.source())
-
-        cursor.execute("SELECT joins, join_date, averagetime, NOW() from user WHERE user = %s;", [nick])
-        joins, join_date, averagetime, time_now = cursor.fetchone()
-        output = "%s oli kanavalla %s" %(nick,timediff(join_date,time_now))
-        
-        print output
 
         if not nick in stats.nicks:
             cursor.execute("INSERT INTO user (user) VALUES(%s);", [nick])

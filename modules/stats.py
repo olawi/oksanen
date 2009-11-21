@@ -9,7 +9,7 @@ from time import strftime, localtime
 import datetime
 
 def timediff(first,second): 
-    timedelta = first-second
+    timedelta = second-first
     elementcount = 0
     output = ""
     if (timedelta.days > 0):
@@ -88,7 +88,7 @@ def stats_part(self,e,c):
         output = "%s oli kanavalla %s" %(nick,timediff(join_date,time_now))
         c.privmsg(e.target(), output)
 
-        timedelta = join_date-time_now
+        timedelta = time_now-join_date
         timeonchannel = timedelta.seconds + (timedelta.days*86400)
         averagetime = (((joins-1)*averagetime)+timeonchannel)/joins
         

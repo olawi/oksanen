@@ -9,8 +9,8 @@ from time import strftime, localtime
 
 def load_nick_table(cursor):
     cursor.execute("SELECT user FROM user")
-        for row in cursor.fetchall():
-            stats.nicks.append(row[0])
+    for row in cursor.fetchall():
+        stats.nicks.append(row[0])
 
 def setup(self):
     self.pubhandlers.append(stats)
@@ -59,7 +59,7 @@ def stats(self, e, c):
             load_nick_table(cursor)
 
         nick = nm_to_n(e.source())
-        
+
         cursor.execute("SELECT joins, join_date, averagetime, NOW() from user WHERE user = %s;", [nick])
         joins, join_date, averagetime, time = cursor.fetchone()
         print joins, join_date, averagetime, time

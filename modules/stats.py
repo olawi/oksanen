@@ -52,12 +52,7 @@ def stats_part(self,e,c):
 
         cursor.close()        
 
-def timediff(first,second):
-    first = strftime(first, "%Y-%m-%d %H:%M:%S")
-    first = datetime.datetime(first[0],first[1],first[2],first[3],first[4],first[5])
-    second = strftime(second, "%Y-%m-%d %H:%M:%S")
-    second = datetime.datetime(second[0],second[1],second[2],second[3],second[4],second[5])
-    
+def timediff(first,second): 
     timedelta = first-second
 
     output = ""

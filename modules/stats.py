@@ -56,6 +56,7 @@ def setup(self):
     self.parthandlers.append(stats_part)
     self.quithandlers.append(stats_part)
     stats.nicks = []
+    stats.channel = self.channel
 
 def stats_join(self,e,c):
     if hasSql:
@@ -86,7 +87,7 @@ def stats_part(self,e,c):
         cursor.execute("SELECT joins, join_date, averagetime, NOW() from user WHERE user = %s;", [nick])
         joins, join_date, averagetime, time_now = cursor.fetchone()
         output = "%s oli kanavalla %s" %(nick,timediff(join_date,time_now))
-        c.privmsg(e.target(), output)
+        c.privmsg(stats.channel, output)
 
         timedelta = time_now-join_date
         timeonchannel = timedelta.seconds + (timedelta.days*86400)

@@ -7,6 +7,7 @@ import string
 
 def setup(self):
     self.commands['log'] = log
+    log.url = "http://rosvosektori.wipsl.com/numero/oksanen/#logs"
 
 def log(self, e, c):
     nick = nm_to_n(e.source())
@@ -32,7 +33,7 @@ def log(self, e, c):
         
             cursor.execute(command, [nick, target] )
         
-            c.privmsg(e.target(), "Logissa on.")
+            c.privmsg(e.target(), "Logissa on. Äänestä osoitteessa: "+log.url)
         else:
             command = """SELECT USER, ENTRY FROM log WHERE `ID`=%s;"""
 
@@ -41,6 +42,6 @@ def log(self, e, c):
                 s = "%s (Loggasi %s)"%(row[1], row[0])
                 c.privmsg(e.target(), s)
     else:
-        c.privmsg(e.target(), "Interwebsissähän ne. http://rosvosektori.wipsl.com/numero/oksanen/#logs")
+        c.privmsg(e.target(), "Interwebsissähän ne. "+log.url)
 
                 

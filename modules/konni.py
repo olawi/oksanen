@@ -47,7 +47,7 @@ def konni_track(self, e, c):
     """remove old data"""
     ke = konni.konniset.keys()
     for k in ke:
-        if (now - konni.konniset[k][0]) > timedelta (hours = 8):
+        if (now - konni.konniset[k][0]) > timedelta (hours = 18):
             del konni.konniset[k]
 
     print "konni updated : %s"%konni.konniset[nick]
@@ -64,9 +64,9 @@ def konni(self, e, c):
     if len(who) < 1:
         if DEBUG :
             print repr(konni.konniset)
-        """random line from the past four hours"""
+        """random line from the past eight hours"""
         for k, v in konni.konniset.iteritems():
-            if (now - v[0]) < timedelta (hours = 4):
+            if (now - v[0]) < timedelta (hours = 8):
                 """for random, only konni counts"""
                 if re.search(konni_re,v[1],re.I):
                     nlist.append(k)

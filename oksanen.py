@@ -59,8 +59,15 @@ class Oksanen(SingleServerIRCBot):
         if hasSql:
             self.db = MySQLdb.connect(host=sqlparams[0], user=sqlparams[1], passwd=sqlparams[2], db = sqlparams[3], charset = "utf8", use_unicode = True)
 
+    def setupTimer():
+        """setup timer"""
+        self.timer.stop()
+        self.timer.add_operation(self.on_minute, 60)
+    
     def setup(self):
         """setup is also called from self.reset()"""
+
+        self.setupTimer()
         self.modules = []
         self.moduledata =  {}
         self.whoisinfo = {}
@@ -87,10 +94,7 @@ class Oksanen(SingleServerIRCBot):
         self.joinhandlers = []
         self.parthandlers = []
         self.quithandlers = []
-        self.timerevents = []
         self.whoiscallbacks = []
-
-        self.timer.stop()
 
         """call self.terminate on modules, if any"""
         try:
@@ -125,13 +129,18 @@ class Oksanen(SingleServerIRCBot):
                 self.modules.append(module)
                 modulenames.append(name)
 
-        for timerevent in self.timerevents:
-            self.timer.add_operation(timerevent[0], timerevent[1])
-        
         if modulenames: 
             print >> sys.stderr, 'Registered modules:', ', '.join(modulenames)
         else: 
             print >> sys.stderr, "Warning: Couldn't find any modules"
+
+    def on_minute(self):
+        print "\033[34mTime goes... (minute)\033[m"
+        if (time.localtime().tm_min == 0):
+            self.on_hour()
+    
+    def on_hour(self):
+        print "\033[34mTime flyes... (hour)\033[m"
 
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
@@ -313,7 +322,20 @@ class TimerManager(object):
         for op in self.ops:
             op.cancel()
         self.ops = []
-            
+
+class Chronograph(object):
+    crontab = []
+    
+    def add_event(self,eventstring):
+        crontab.append(split(eventstring))
+        
+    def delete_event(self,methodname):
+        print "yeah"
+        
+    def reset(self):
+        crontab = []
+    
+        
 def main():
     import sys
     from optparse import OptionParser

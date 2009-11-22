@@ -39,8 +39,9 @@ def uustytto_callback(self,e,c):
     realname = self.whoisinfo['user'][4]
 
     r = re.compile(r'\b%s\b'%realname,re.I)
-
-    if map(r.match,girlnames) :
+    m = map(r.match,girlnames)
+    
+    if filter(lambda n: n is not None,m) :
         print " TYTTÖ! ----> %s"%realname
         if not snick in uustytto_lista:
             if hasSql:

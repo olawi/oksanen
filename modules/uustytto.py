@@ -37,8 +37,9 @@ def uustytto_callback(self,e,c):
     snick = re.sub('[^a-zA-Z0-9]','',nick)
     
     realname = self.whoisinfo['user'][4]
+    firstname = realname.split()[0]
 
-    r = re.compile(r'\b%s\b'%realname,re.I)
+    r = re.compile(r'\b%s\b'%firstname,re.I)
     m = map(r.match,girlnames)
     
     if filter(lambda n: n is not None,m) :

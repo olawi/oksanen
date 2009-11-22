@@ -41,6 +41,6 @@ def log(self, e, c):
                 s = "%s (Loggasi %s)"%(row[1], row[0])
                 c.privmsg(e.target(), s)
     else:
-        c.privmsg(e.target(), "Interwebsissähän ne. http://rosvosektori.wipsl.com/numero/")
+        c.privmsg(e.target(), "Interwebsissähän ne. http://rosvosektori.wipsl.com/numero/oksanen/#logs")
 
                 

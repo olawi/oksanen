@@ -82,7 +82,8 @@ def stats_join(self,e,c):
                 output = "Tervetuloa %s! Olit viimeksi kanavalla %s" %(nick,timediff(join_date,part_date))
                 output += " - keskim‰‰rin olet ollut %s" %(seconds_to_string(averagetime))
                 output += "| %s rivi‰ per kerta." %(said/joins)
-                c.privmsg(stats.channel, output)
+                # removed by popular demand :I
+                #c.privmsg(stats.channel, output)
         cursor.execute("UPDATE user SET joins = joins + 1, join_date = NOW() WHERE user = %s;", [nick])
         cursor.close()
 

@@ -59,7 +59,7 @@ class Oksanen(SingleServerIRCBot):
         if hasSql:
             self.db = MySQLdb.connect(host=sqlparams[0], user=sqlparams[1], passwd=sqlparams[2], db = sqlparams[3], charset = "utf8", use_unicode = True)
 
-    def setupTimer():
+    def setupTimer(self):
         """setup timer"""
         self.timer.stop()
         self.timer.add_operation(self.on_minute, 60)

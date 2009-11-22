@@ -314,7 +314,7 @@ class TimerManager(object):
     ops = []
 
     def add_operation(self, operation, interval, args=[], kwargs={}):
-        op = Operation(interval, operation, args, kwargs)
+        op = TimerOperation(interval, operation, args, kwargs)
         self.ops.append(op)
         thread.start_new_thread(op.run, ())
 

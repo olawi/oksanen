@@ -8,7 +8,7 @@ import os
 try:
     import MySQLdb
     hasSql = True
-except Exception, e:
+except Exception, ex:
     hasSql = False
 
 
@@ -95,6 +95,7 @@ class Oksanen(SingleServerIRCBot):
         """reload calls self.terminate on all modules and reloads them"""
         
         self.commands = {}
+        self.privcommands = {}
         self.pubhandlers = []
         self.joinhandlers = []
         self.parthandlers = []
@@ -126,8 +127,8 @@ class Oksanen(SingleServerIRCBot):
 
             try: 
                 module = imp.load_source(name, filename)
-            except Exception, e: 
-                print >> sys.stderr, "\033[31mError\033[m loading %s: %s (in oksanen.py)" % (name, e)
+            except Exception, ex: 
+                print >> sys.stderr, "\033[31mError\033[m loading %s: %s (in oksanen.py)" % (name, ex)
             else: 
                 if hasattr(module, 'setup'): 
                     module.setup(self)
@@ -143,10 +144,10 @@ class Oksanen(SingleServerIRCBot):
     def on_minute(self):
         current_time = datetime.datetime.today()
         
-        print "\033[34mTime goes... (%s:%s)\033[m" %(current_time.hour,current_time.minute)
-        for func in self.cron.get_events(current_time):
+        print "\033[34mon_minute: (%02d:%02d)\033[m" %(current_time.hour,current_time.minute)
+        for (func, args, kwargs) in self.cron.get_events(current_time):
             try:
-                func(self, e, c)
+                func(args,kwargs)
             except Exception, ex:
                 print "\033[31mERROR\033[m (on_minute): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
@@ -190,6 +191,8 @@ class Oksanen(SingleServerIRCBot):
             cursor.execute("""INSERT INTO topic (entry, nick) VALUES (%s, %s)""", [entry, nick])
         
     def on_privmsg(self, c, e):
+
+        e._arguments[0] = ircutil.recode(e._arguments[0])
         self.do_command(e, e.arguments()[0])
 
     def on_pubmsg(self, c, e):
@@ -257,28 +260,43 @@ class Oksanen(SingleServerIRCBot):
             try:
                 func = self.commands[cmd]
                 ircutil.run_once(0, func, [self, e, c])
-            except Exception, e:
-                print "\033[31mERROR\033[m (do_pubcommand): %s"%e
+            except Exception, ex:
+                print "\033[31mERROR\033[m (do_pubcommand): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
 
     def do_command(self, e, cmd):
         nick = nm_to_n(e.source())
         c = self.connection
 
-        e._arguments[0] = ircutil.recode(e._arguments[0])
         line = e.arguments()[0]
 
-        if is_admin(e.source()) and cmd == "reset":
+        """privcommands"""
+        if line[0] == "!" and len(line)>1:
+            parts = line[1:].split()
+            cmd = parts[0].lower()
+            try:
+                func = self.privcommands[cmd]
+                ircutil.run_once(0, func, [self, e, c])
+            except Exception, ex:
+                print "\033[31mERROR\033[m (do_command): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
+
+        """The rest is admin shit"""
+        if not is_admin(e.source()):
+            c.notice(nick, "En tajua: " + cmd)
+            return
+        
+        if cmd == "reset":
             print >> sys.stderr, "cmd: RESET modules"
             self.reset()
             c.notice(nick, cmd)
 
-        elif is_admin(e.source()) and cmd == "reload":
+        elif cmd == "reload":
             print >> sys.stderr, "cmd: RELOAD modules"
             self.reload()
             c.notice(nick, cmd)
             
-        elif is_admin(e.source()) and cmd.startswith("raw "):
+        elif cmd.startswith("raw "):
             print >> sys.stderr, "cmd: %s"%cmd
             s = re.sub('^raw ','',cmd)
             try:
@@ -302,7 +320,8 @@ class Oksanen(SingleServerIRCBot):
                 voiced.sort()
                 c.notice(nick, "Voiced: " + ", ".join(voiced))
 
-        elif is_admin(e.source()) and line.startswith("!") and len(line) > 1:
+        elif line.startswith("!") and len(line) > 1:
+            """do pubcommands in private for admins"""
             parts = line[1:].split()
             cmd = parts[0].lower()
             try:
@@ -310,12 +329,12 @@ class Oksanen(SingleServerIRCBot):
                 """query source -> target"""
                 e._target = e.source()
                 ircutil.run_once(0, func, [self, e, c])
-            except Exception, e:
-                print "\033[31mERROR\033[m (do_command): %s"%e
+            except Exception, ex:
+                print "\033[31mERROR\033[m (do_command): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
 
         else:
-            c.notice(nick, "En tajua: " + cmd)
+            c.notice(nick, "Wut, sir? : " + cmd)
 
 class TimerOperation(threading._Timer):
     def __init__(self, *args, **kwargs):
@@ -329,8 +348,8 @@ class TimerOperation(threading._Timer):
             if not self.finished.isSet():
                 try:
                     self.function(*self.args, **self.kwargs)
-                except Exception, e:
-                    print "\033[31mERROR\033[m (timer): %s"%e
+                except Exception, ex:
+                    print "\033[31mERROR\033[m (timer): %s"%ex
                     if DEBUG > 1: traceback.print_stack()
             else:
                 return
@@ -367,7 +386,7 @@ class Chronograph(object):
     crontab = []
     id = 0
 
-    def add_event(self,timestring,cmd):
+    def add_event(self, timestring, cmd, *args, **kwargs):
         elements = timestring.split()
         if (len(elements) != 5):
             raise RuntimeError('wrong amount of elements (5 needed) in: "%s"' %(eventstring))
@@ -380,6 +399,8 @@ class Chronograph(object):
                     element[idx] = int(element[idx])
             table_element.append(element)
         table_element.append(cmd)
+        table_element.append(args)
+        table_element.append(kwargs)
         self.crontab.append(table_element)
         self.id += 1
         return (self.id-1)
@@ -405,7 +426,7 @@ class Chronograph(object):
                 (mo[0] == "*" or checktime.month in mo) and\
                 (dow[0] == "*" or checktime.weekday() in dow) and\
                 (m[0] == "*" or checktime.minute in m)):
-                commandlist.append(event[6])
+                commandlist.append(event[6:8])
 
         return commandlist
 

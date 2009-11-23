@@ -25,7 +25,7 @@ import sys, imp
 import thread
 import threading
 import traceback
-import time
+import datetime
 import re
 
 home = os.getcwd()
@@ -50,6 +50,7 @@ class Oksanen(SingleServerIRCBot):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.channel = channel
         self.timer = TimerManager()
+        self.cron = Chronograph()
         self.setup()
         print "Modules:",self.modules
         print "Commands:",self.commands
@@ -99,6 +100,7 @@ class Oksanen(SingleServerIRCBot):
         self.parthandlers = []
         self.quithandlers = []
         self.whoiscallbacks = []
+        self.cron.reset()
 
         """call self.terminate on modules, if any"""
         try:
@@ -139,12 +141,16 @@ class Oksanen(SingleServerIRCBot):
             print >> sys.stderr, "Warning: Couldn't find any modules"
 
     def on_minute(self):
-        print "\033[34mTime goes... (minute)\033[m"
-        if (time.localtime().tm_min == 0):
-            self.on_hour()
-    
-    def on_hour(self):
-        print "\033[34mTime flyes... (hour)\033[m"
+        current_time = datetime.datetime.today()
+        
+        print "\033[34mTime goes... (%s:%s)\033[m" %(current_time.hour,current_time.minute)
+        for func in self.cron.get_events(current_time):
+            try:
+                func(self, e, c)
+            except Exception, ex:
+                print "\033[31mERROR\033[m (on_minute): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
+ 
 
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
@@ -345,16 +351,67 @@ class TimerManager(object):
         self.ops = []
 
 class Chronograph(object):
+    """
+    Cronograph timestring format:
+        .---------------- minute (0 - 59)
+        |  .------------- hour (0 - 23)
+        |  |  .---------- day of month (1 - 31)
+        |  |  |  .------- month (1 - 12)
+        |  |  |  |  .---- day of week (0 - 6)
+        |  |  |  |  |
+       '*  *  *  *  *' to be executed
+    one element can be "*" or number or comma separated list of numbers (containing no spaces)
+
+    for example add_event('*  *  *  *  *',callback)
+    """
     crontab = []
-    
-    def add_event(self,eventstring):
-        crontab.append(split(eventstring))
-        
-    def delete_event(self,methodname):
-        print "yeah"
-        
+    id = 0
+
+    def add_event(self,timestring,cmd):
+        elements = timestring.split()
+        if (len(elements) != 5):
+            raise RuntimeError('wrong amount of elements (5 needed) in: "%s"' %(eventstring))
+        table_element = []
+        table_element.append(id)
+        for element in elements[0:5]:
+            element = element.split(",")
+            if element[0] != "*":
+                for idx in range(len(element)):
+                    element[idx] = int(element[idx])
+            table_element.append(element)
+        table_element.append(cmd)
+        self.crontab.append(table_element)
+        self.id += 1
+        return (self.id-1)
+
+    def delete_event(self,id):
+        for event in self.crontab:
+            if event[0] == id:
+                self.crontab.pop(self.crontab.index(event))
+                return true
+        return false
+
+    def get_events(self,checktime):
+        commandlist = []
+        for event in self.crontab:
+            m = event[1] #minute
+            h = event[2] #month
+            d = event[3] #day of month
+            mo = event[4] #month
+            dow = event[5] #day of the week
+
+            if ((d[0] == "*" or checktime.day in d) and\
+                (h[0] == "*" or checktime.hour in h) and\
+                (mo[0] == "*" or checktime.month in mo) and\
+                (dow[0] == "*" or checktime.weekday() in dow) and\
+                (m[0] == "*" or checktime.minute in m)):
+                commandlist.append(event[6])
+
+        return commandlist
+
     def reset(self):
-        crontab = []
+        self.crontab = []
+        self.id = 0
     
         
 def main():

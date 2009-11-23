@@ -37,9 +37,13 @@ def ruletti(self,e,c):
             
 
     r = random.randint(1,6)
+    cursor = self.db.cursor()
     if  r == 1:
+        sqlquery = """INSERT INTO gamescores (user,ruletti,ruletti_bang) VALUES (%s,1,1) ON DUPLICATE KEY UPDATE ruletti = ruletti + 1,ruletti_bang = ruletti_bang + 1;"""
         c.kick(e.target(),nick,"*BANG*")
     else:
+        sqlquery = """INSERT INTO gamescores (user,ruletti) VALUES (%s,1) ON DUPLICATE KEY UPDATE ruletti = ruletti + 1;"""
         c.privmsg(e.target(),"%s, *click*"%nick)
-
+    cursor.execute(sqlquery, [nick] )
+    cursor.close()
     

@@ -18,7 +18,7 @@ except Exception, e:
 """
 
 from ircbot import SingleServerIRCBot
-from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
+from irclib import nm_to_n, nm_to_h, nm_to_uh, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 import ircutil
 
 import sys, imp
@@ -26,6 +26,7 @@ import thread
 import threading
 import traceback
 import time
+import re
 
 home = os.getcwd()
 sys.path.append("./modules")
@@ -36,8 +37,10 @@ def debug(text):
     if DEBUG:
         print text
 
-def is_admin(nick):
-    if nick in ["mossman", "Olawi", "Squib"]:
+def is_admin(source):
+    if nm_to_uh(source) in ["~antti@193.65.182.140",
+                            "~ppietari@tuomi.oulu.fi",
+                            "m7kejo00@rhea.oamk.fi"]:
         return True
     else:
         return False
@@ -252,14 +255,24 @@ class Oksanen(SingleServerIRCBot):
         e._arguments[0] = ircutil.recode(e._arguments[0])
         line = e.arguments()[0]
 
-        if is_admin(nick) and cmd == "reset":
+        if is_admin(e.source()) and cmd == "reset":
             print >> sys.stderr, "cmd: RESET modules"
             self.reset()
             c.notice(nick, cmd)
-            
-        elif is_admin(nick) and cmd == "reload":
+
+        if is_admin(e.source()) and cmd == "reload":
             print >> sys.stderr, "cmd: RELOAD modules"
             self.reload()
+            c.notice(nick, cmd)
+            
+        elif is_admin(e.source()) and cmd.startswith("raw "):
+            print >> sys.stderr, "cmd: %s"%cmd
+            s = re.sub('^raw ','',cmd)
+            try:
+                c.send_raw(s)
+            except Exception, ex:
+                print "\033[31mERROR\033[m (do_command): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
             c.notice(nick, cmd)
             
         elif cmd == "stats":
@@ -276,7 +289,7 @@ class Oksanen(SingleServerIRCBot):
                 voiced.sort()
                 c.notice(nick, "Voiced: " + ", ".join(voiced))
 
-        elif is_admin(nick) and line[0] == "!" and len(line) > 1:
+        elif is_admin(e.source()) and line.startswith("!") and len(line) > 1:
             parts = line[1:].split()
             cmd = parts[0].lower()
             try:

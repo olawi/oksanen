@@ -813,7 +813,7 @@ class ServerConnection(Connection):
             else:
                 self.socket.send(send_raw_string + "\r\n")
             if DEBUG:
-                print "TO SERVER:", send_raw_string
+                print "\033[33mTO SERVER:\033[m", send_raw_string
         except socket.error, x:
             # Ouch!
             self.disconnect("Connection reset by peer.")

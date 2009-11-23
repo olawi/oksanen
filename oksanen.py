@@ -415,6 +415,8 @@ class Chronograph(object):
                 if hasattr(checktime,k):
                     if not getattr(checktime,k) in event['time'][k]:
                         rejected = True
+                elif k == 'weekday' and checktime.weekday() not in event['time'][k]:
+                    rejected = True
             if not rejected:
                 commandlist.append(event)
             

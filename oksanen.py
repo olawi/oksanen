@@ -76,6 +76,7 @@ class Oksanen(SingleServerIRCBot):
         self.modules = []
         self.moduledata =  {}
         self.whoisinfo = {}
+        self.cron.reset()
 
         self.reload()
 
@@ -101,7 +102,6 @@ class Oksanen(SingleServerIRCBot):
         self.parthandlers = []
         self.quithandlers = []
         self.whoiscallbacks = []
-        self.cron.reset()
 
         """call self.terminate on modules, if any"""
         try:
@@ -145,9 +145,10 @@ class Oksanen(SingleServerIRCBot):
         current_time = datetime.datetime.today()
         
         print "\033[34mon_minute: (%02d:%02d)\033[m" %(current_time.hour,current_time.minute)
-        for (func, args, kwargs) in self.cron.get_events(current_time):
+        for event in self.cron.get_events(current_time):
             try:
-                func(args,kwargs)
+                func = event['cmd']
+                func(*event['args'],**event['kwargs'])
             except Exception, ex:
                 print "\033[31mERROR\033[m (on_minute): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
@@ -386,22 +387,15 @@ class Chronograph(object):
     crontab = []
     id = 0
 
-    def add_event(self, timestring, cmd, *args, **kwargs):
-        elements = timestring.split()
-        if (len(elements) != 5):
-            raise RuntimeError('wrong amount of elements (5 needed) in: "%s"' %(eventstring))
-        table_element = []
-        table_element.append(id)
-        for element in elements[0:5]:
-            element = element.split(",")
-            if element[0] != "*":
-                for idx in range(len(element)):
-                    element[idx] = int(element[idx])
-            table_element.append(element)
-        table_element.append(cmd)
-        table_element.append(args)
-        table_element.append(kwargs)
-        self.crontab.append(table_element)
+    def add_event(self, timed, cmd, *args, **kwargs):
+        cron_entry = {}        
+        cron_entry['id'] = self.id
+        cron_entry['time'] = timed
+        cron_entry['cmd'] = cmd
+        cron_entry['args'] = args
+        cron_entry['kwargs'] = kwargs
+        print repr(cron_entry)
+        self.crontab.append(cron_entry)
         self.id += 1
         return (self.id-1)
 
@@ -409,25 +403,21 @@ class Chronograph(object):
         for event in self.crontab:
             if event[0] == id:
                 self.crontab.pop(self.crontab.index(event))
-                return true
-        return false
+                return True
+        return False
 
     def get_events(self,checktime):
         commandlist = []
+        
         for event in self.crontab:
-            m = event[1] #minute
-            h = event[2] #month
-            d = event[3] #day of month
-            mo = event[4] #month
-            dow = event[5] #day of the week
-
-            if ((d[0] == "*" or checktime.day in d) and\
-                (h[0] == "*" or checktime.hour in h) and\
-                (mo[0] == "*" or checktime.month in mo) and\
-                (dow[0] == "*" or checktime.weekday() in dow) and\
-                (m[0] == "*" or checktime.minute in m)):
-                commandlist.append(event[6:8])
-
+            rejected = False
+            for k in event['time'].keys():
+                if hasattr(checktime,k):
+                    if not getattr(checktime,k) in event['time'][k]:
+                        rejected = True
+            if not rejected:
+                commandlist.append(event)
+            
         return commandlist
 
     def reset(self):

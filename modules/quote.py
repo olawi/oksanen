@@ -46,7 +46,6 @@ def setup(self):
 
 def quote(self,e,c):
 
-    self.cron.add_event("* * * * *", 'print', "QUOTE added this event",{})
     line = e.arguments()[0]
 
     query = string.join(line.split()[1:], "+")

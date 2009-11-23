@@ -8,28 +8,47 @@ import random
 from irclib import nm_to_n
 
 tissit_url = 'http://%s.kiinnostaa.org/'
+tissit_cmdlist = ['tissit', 'pillu', 'perse', 'pano', 'lesbot', 'suihinotto']
 
 def setup(self):
-    self.commands['tissit'] = tissit
-    self.commands['pillu'] = tissit
-    self.commands['perse'] = tissit
-    self.commands['pano'] = tissit
-    self.commands['lesbot'] = tissit
-    self.commands['suihinotto'] = tissit
+    for cmd in tissit_cmdlist:
+        self.commands[cmd] = tissit
+    try:
+        tissit.urls = self.moduledata['tissit']
+    except:
+        tissit.urls = {}
+        
+def terminate(self):
+    """save data"""
+    self.moduledata['tissit'] = tissit.urls
 
-def get_tissit(self, url, thumbs=False):
-
-    # Get index
-    fd = urllib2.urlopen(url+'index.htm')
+def get_tissit_index(self, url, cmd):
+    fd = urllib2.urlopen(url%cmd+'index.htm')
     data = fd.read()
     fd.close()
-
-    subpages = re.findall(r'<a href=\"(\d+.htm)"',data)
+    subpages = re.findall(r'<a href=\"(\d+.htm)"',data)    
+    return subpages
     
-    # randomize and get subpage
-    page = random.choice(subpages)
+def get_tissit(self, url, cmd, thumbs=False):
 
-    fd = urllib2.urlopen(url+page)
+    # Get index and select a random subpage
+    try:
+        page = random.choice(tissit.urls[cmd])
+        print "tissit: using cached urls for %s"%cmd
+    except:
+        print "tissit: retrieving index for %s"%(url%cmd)
+        tissit.urls[cmd] = get_tissit_index(self, url, cmd)
+        page = random.choice(tissit.urls[cmd])
+
+    try:
+        fd = urllib2.urlopen(url%cmd + page)
+    except:
+        """links outdated?"""
+        print "tissit: index for %s outdated, refreshing..."%(url%cmd)
+        tissit.urls[cmd] = get_tissit_index(self, url, cmd)
+        page = random.choice(tissit.urls[cmd])
+        fd = urllib2.urlopen(url%cmd + page)
+
     data = fd.read()
     fd.close()
     
@@ -42,7 +61,8 @@ def get_tissit(self, url, thumbs=False):
         img = random.choice(imlist)
     else:
         img = 'index.htm'
-    return url + img
+        
+    return url%cmd + img
 
 def tissit(self, e, c):
     
@@ -60,7 +80,7 @@ def tissit(self, e, c):
     else:
         use_thumbs = False
         
-    s = get_tissit(self, tissit_url%cmd, use_thumbs)
+    s = get_tissit(self, tissit_url, cmd, use_thumbs)
     c.privmsg(e.target(),"%s, %s"%(nick, s))
 
 

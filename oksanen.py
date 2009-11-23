@@ -260,7 +260,7 @@ class Oksanen(SingleServerIRCBot):
             self.reset()
             c.notice(nick, cmd)
 
-        if is_admin(e.source()) and cmd == "reload":
+        elif is_admin(e.source()) and cmd == "reload":
             print >> sys.stderr, "cmd: RELOAD modules"
             self.reload()
             c.notice(nick, cmd)

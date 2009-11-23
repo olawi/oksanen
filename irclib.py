@@ -382,6 +382,8 @@ class ServerConnection(Connection):
         self.ssl = None
         self.output_encoding = 'utf-8'
         self.line_maxlen = 396
+        self.send_min_delay = 0.5
+        self.last_sent = 0
 
     def connect(self, server, port, nickname, password=None, username=None,
                 ircname=None, localaddress="", localport=0, ssl=False, ipv6=False):
@@ -774,7 +776,7 @@ class ServerConnection(Connection):
         """long line"""
         lines = ircutil.wordwrap(text,self.line_maxlen)
         for line in lines:
-            self.send_encoded("PRIVMSG %s :%s" % (target, text))
+            self.send_encoded("PRIVMSG %s :%s" % (target, line))
             #self.send_raw("PRIVMSG %s :%s" % (target, line))
             
     def privmsg_many(self, targets, text):
@@ -801,6 +803,16 @@ class ServerConnection(Connection):
             self.send_raw(r'%s'%text)
 
     def send_raw(self, send_raw_string):
+        t = time.time()
+        if (t - self.last_sent) < self.send_min_delay:
+            self.irclibobj.execute_delayed(self.send_min_delay, self.send_raw, [send_raw_string])
+            print "send_raw: delayed at %s"%t
+            return
+        else:
+            self._send_raw(send_raw_string)
+            self.last_sent = time.time()
+            
+    def _send_raw(self, send_raw_string):
         """Send raw string to the server.
 
         The string will be padded with appropriate CR LF.

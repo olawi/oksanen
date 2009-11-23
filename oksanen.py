@@ -175,7 +175,14 @@ class Oksanen(SingleServerIRCBot):
             except Exception, ex:
                 print "\033[31mERROR\033[m (on_quit): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
-                
+
+    def on_topic(self, c, e):
+        nick = nm_to_n(e.source())
+        entry = ircutil.recode(e._arguments[0])
+        if hasSql:
+            cursor = self.db.cursor()
+            cursor.execute("""INSERT INTO topic (entry, nick) VALUES (%s, %s)""", [entry, nick])
+        
     def on_privmsg(self, c, e):
         self.do_command(e, e.arguments()[0])
 

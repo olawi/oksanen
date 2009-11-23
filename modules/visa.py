@@ -22,8 +22,6 @@ def leffavisa(self,e,c):
     add_question(self,e,c,1)
     
 def check_question(self,e,c):
-    if visa.players == []:
-        getplayers(self);
     if (leffavisa.question != ""):
         if (e.arguments()[0].lower() == leffavisa.answer.lower()):
             cursor = self.db.cursor()

@@ -21,7 +21,8 @@ def getlist(self):
         cursor.execute("""SELECT name FROM uustytto""")
         for row in cursor.fetchall():
             uustytto_lista.append(row[0])
-
+        cursor.close()
+            
 def uustytto(self,e,c):
     
     nick = nm_to_n(e.source())
@@ -49,6 +50,7 @@ def uustytto_callback(self,e,c):
                 cursor = self.db.cursor()
                 sqlquery = """INSERT INTO uustytto (NAME) VALUES (%s); """
                 cursor.execute(sqlquery, [snick] )
+                cursor.close()
             uustytto_lista.append(snick)
             print " - UUSTYTTÖ -"
             print uustytto_lista

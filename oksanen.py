@@ -250,7 +250,7 @@ class Oksanen(SingleServerIRCBot):
             cmd = parts[0].lower()
             try:
                 func = self.commands[cmd]
-                func(self, e, c)
+                ircutil.run_once(0, func, [self, e, c])
             except Exception, e:
                 print "\033[31mERROR\033[m (do_pubcommand): %s"%e
                 if DEBUG > 1: traceback.print_stack()
@@ -303,7 +303,7 @@ class Oksanen(SingleServerIRCBot):
                 func = self.commands[cmd]
                 """query source -> target"""
                 e._target = e.source()
-                func(self, e, c)
+                ircutil.run_once(0, func, [self, e, c])
             except Exception, e:
                 print "\033[31mERROR\033[m (do_command): %s"%e
                 if DEBUG > 1: traceback.print_stack()

@@ -10,7 +10,7 @@ from sgmllib import SGMLParser
 from oksanen import hasSql
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
-from ircutil import recode
+from ircutil import recode, run_once
 
 url_s = '(((https?|ftp):\\/\\/)|www\\.)(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([a-zA-Z0-9\\-]+\\.)*[a-zA-Z0-9\\-]+\\.(com|net|org|info|biz|gov|name|edu|[a-zA-Z][a-zA-Z]))(:[0-9]+)?((\\/|\\?)[^ "]*[^,;\\.:">)])?'
 
@@ -39,6 +39,9 @@ def setup(self):
     self.pubhandlers.append(urlhandler)
 
 def urlhandler(self, e, c):
+    run_once(0, _urlhandler, [self, e, c])
+    
+def _urlhandler(self, e, c):
 
     line = e.arguments()[0]
     
@@ -50,7 +53,7 @@ def urlhandler(self, e, c):
 
     uri = m.group(0)
     
-    if re.match('www.',uri):
+    if uri.startswith('www.'):
         uri = re.sub('^www.','http://www.',uri)
 
     opr = opener()

@@ -9,6 +9,7 @@ import formatter
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
+from ircutil import run_once
 
 spotify_url = 'http://spotify.url.fi/'
 spotify_uri_re = '(http:\/\/open.spotify.com\/|spotify:)(album|artist|track)([:\/])([a-zA-Z0-9]+)\/?'
@@ -52,6 +53,9 @@ def setup(self):
     self.pubhandlers.append(spotify)
 
 def spotify(self, e, c):
+    run_once(0, _spotify, [self, e, c])
+    
+def _spotify(self, e, c):
     
     line = e.arguments()[0]
     
@@ -61,21 +65,26 @@ def spotify(self, e, c):
     if not m:
         return
 
-    fd = urllib.urlopen("%s%s/%s"%(spotify_url,m.group(2),m.group(4)))
-    page = fd.read()
-    fd.close
+    try:
+        fd = urllib.urlopen("%s%s/%s"%(spotify_url,m.group(2),m.group(4)))
+        page = fd.read()
+        fd.close
     
-    p = parser()
-    p.feed(page)
+        p = parser()
+        p.feed(page)
+    except Exception, ex:
+        print "spotify: fetching spotify resource failed: %s"%ex
+        return
 
     # exceptional cases here
-    if re.match('slayer',string.lower(p.dict['artist'])):
-        c.privmsg(e.target(), "\,,/(>_<)\,,/ ~!! SLAYER !!~ \,,/(>_<)\,,/")
-
-    if re.search('c(.{1,2})line dion',string.lower(p.dict['artist'])):
-        c.privmsg(e.target(), "EI NYT JUMALAUTA TUOMMOSTA KUUNNELLA! SEIS!")
+    if 'artist' in p.dict:
+        if re.match('slayer',string.lower(p.dict['artist'])):
+            c.privmsg(e.target(), "\,,/(>_<)\,,/ ~!! SLAYER !!~ \,,/(>_<)\,,/")
+            
+        if re.search('c(.{1,2})line dion',string.lower(p.dict['artist'])):
+            c.privmsg(e.target(), "EI NYT JUMALAUTA TUOMMOSTA KUUNNELLA! SEIS!")
         
-    messu = ""
+    messu = ''
    
     if 'artist' in p.dict :
         messu += "%s"%p.dict['artist']
@@ -89,4 +98,5 @@ def spotify(self, e, c):
     if 'year' in p.dict :
         messu += " (%s)"%p.dict['year']
 
-    c.privmsg(e.target(),"%s"%messu)
+    if messu:
+        c.privmsg(e.target(),messu)

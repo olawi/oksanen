@@ -6,6 +6,7 @@
 #
 
 import string,re
+import threading
 
 DEBUG = 1
 
@@ -85,3 +86,10 @@ def recode(text, encoding='utf-8',enlist=[]):
 
     return text
 
+def run_once(time, func, args=[], kwargs={}):
+    """Run the given function once after time seconds"""
+    try:
+        t = threading.Timer(time, func, args, kwargs)
+        t.start()
+    except Exception, ex:
+        print "\033[31mERROR\033[m (ircutil.run_once): %s"%ex

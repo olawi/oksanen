@@ -11,8 +11,8 @@ def setup(self):
     self.pubhandlers.append(check_question)
     self.privcommands['musavisa'] = musavisa
     self.privcommands['leffavisa'] = leffavisa
-    self.commands['musavisa'] = musavisa_print
-    self.commands['leffavisa'] = leffavisa_print
+    self.commands['musakysymys'] = musavisa_print
+    self.commands['leffakysymys'] = leffavisa_print
     leffavisa.question = ""
     leffavisa.answer = ""
     musavisa.question = ""

@@ -3,6 +3,7 @@
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_u
+import string
 
 from oksanen import hasSql
 

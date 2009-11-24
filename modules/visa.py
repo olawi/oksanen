@@ -4,6 +4,7 @@
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_u
 import string
+import ircutil
 
 from oksanen import hasSql
 
@@ -70,7 +71,7 @@ def add_question(self,e,c,type):
         return
 
     line = e.arguments()[0]
-    line = string.join(line.split()[1:], " ")
+    line = ircutil.recode(string.join(line.split()[1:], " "))
     line = line.split("|")
     if (len(line) == 2 and len(line[0])>0 and len(line[1])>0):
         cursor = self.db.cursor()

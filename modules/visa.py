@@ -16,8 +16,10 @@ def setup(self):
     self.commands['leffakysymys'] = leffavisa_print
     leffavisa.question = ""
     leffavisa.answer = ""
+    leffavisa.inquirer = ""
     musavisa.question = ""
     musavisa.answer = ""
+    musavisa.inquirer = ""
 
 def musavisa(self,e,c):
     add_question(self,e,c,0)
@@ -38,26 +40,23 @@ def leffavisa_print(self,e,c):
         c.privmsg(e.target(), "Leffavisa ei ole juuri nyt k‰ynniss‰. Lis‰‰ uusi kysymys: /msg Oksanen !leffavisa vastaus|kysymys")
     
 def check_question(self,e,c):
-    if (leffavisa.question != ""):
+    nick = nm_to_n(e.source())
+    if (leffavisa.question != "" and leffavisa.inquirer != nick):
         if (e.arguments()[0].lower() == leffavisa.answer.lower()):
             cursor = self.db.cursor()
-            nick = nm_to_n(e.source())
             sqlquery = """INSERT INTO gamescores (user,leffavisa) VALUES (%s,1) ON DUPLICATE KEY UPDATE leffavisa = leffavisa + 1;"""
             cursor.execute(sqlquery, [nick] )
             c.privmsg(e.target(), "%s, jee, oikein meni!" %(nick))
             leffavisa.question = ""
-            leffavisa.answer = ""
             cursor.close()
             return
-    if (musavisa.question != ""):
+    if (musavisa.question != "" and musavisa.inquirer != nick):
         if (e.arguments()[0].lower() == musavisa.answer.lower()):
             cursor = self.db.cursor()
-            nick = nm_to_n(e.source())
             sqlquery = """INSERT INTO gamescores (user,musavisa) VALUES (%s,1) ON DUPLICATE KEY UPDATE musavisa = musavisa + 1;"""
             cursor.execute(sqlquery, [nick] )
             c.privmsg(e.target(), "%s, jee, oikein meni!" %(nick))
             musavisa.question = ""
-            musavisa.answer = ""
             cursor.close()
             return
           
@@ -80,12 +79,14 @@ def add_question(self,e,c,type):
             cursor.execute(sqlquery, [nick,line[1],line[0]])
             musavisa.question = line[1]
             musavisa.answer = line[0]
+            musavisa.inquirer = nick
             c.privmsg(self.channel, "Musavisa: %s" %(line[1]))
         else:
             sqlquery = """INSERT INTO leffavisa (USER,QUESTION,ANSWER) VALUES (%s,%s,%s);"""
             cursor.execute(sqlquery, [nick,line[1],line[0]])
             leffavisa.question = line[1]
             leffavisa.answer = line[0]
+            leffavisa.inquirer = nick
             c.privmsg(self.channel, "Leffavisa: %s" %(line[1]))
         cursor.close()
     else:

@@ -11,6 +11,8 @@ def setup(self):
     self.pubhandlers.append(check_question)
     self.privcommands['musavisa'] = musavisa
     self.privcommands['leffavisa'] = leffavisa
+    self.commands['musavisa'] = musavisa_print
+    self.commands['leffavisa'] = leffavisa_print
     leffavisa.question = ""
     leffavisa.answer = ""
     musavisa.question = ""
@@ -21,6 +23,18 @@ def musavisa(self,e,c):
 
 def leffavisa(self,e,c):
     add_question(self,e,c,1)
+    
+def musavisa_print(self,e,c):
+    if (musavisa.question != ""):
+        c.privmsg(e.target(), "Musavisa: %s" %(musavisa.question))
+    else:
+        c.privmsg(e.target(), "Musavisa ei ole juuri nyt k‰ynniss‰. Lis‰‰ uusi kysymys: /msg Oksanen !musavisa vastaus|kysymys")
+        
+def leffavisa_print(self,e,c):
+    if (leffavisa.question != ""):
+        c.privmsg(e.target(), "Leffavisa: %s" %(leffavisa.question))
+    else:
+        c.privmsg(e.target(), "Leffavisa ei ole juuri nyt k‰ynniss‰. Lis‰‰ uusi kysymys: /msg Oksanen !leffavisa vastaus|kysymys")
     
 def check_question(self,e,c):
     if (leffavisa.question != ""):

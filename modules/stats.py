@@ -73,7 +73,7 @@ def stats_join(self,e,c):
         nick = nm_to_n(e.source())
 
         if not nick in stats.nicks:
-            cursor.execute("INSERT INTO user (user) VALUES(%s);", [nick])
+            cursor.execute("INSERT INTO user (user,firstseen) VALUES(%s,NOW());", [nick])
             stats.nicks.append(nick)
         else:
             cursor.execute("SELECT said, joins, join_date, averagetime, part_date from user WHERE user = %s;", [nick])
@@ -118,7 +118,7 @@ def stats(self, e, c):
         nick = nm_to_n(e.source())
 
         if not nick in stats.nicks:
-            cursor.execute("INSERT INTO user (user,joins) VALUES(%s,1);", [nick])
+            cursor.execute("INSERT INTO user (user,joins,firstseen) VALUES(%s,1,NOW());", [nick])
             stats.nicks.append(nick)
         
         line = e.arguments()[0]

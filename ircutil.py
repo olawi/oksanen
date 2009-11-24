@@ -52,6 +52,9 @@ def recode(text, encoding='utf-8',enlist=[]):
 
     if not enlist:
         enlist = ['ascii', 'utf-8', 'iso-8859-15', 'iso-8859-1', recode_fallback]
+    else:
+        enlist.append(recode_fallback)
+        
     out = u''
 
     for enc in enlist:

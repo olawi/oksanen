@@ -51,7 +51,7 @@ def add_question(self,e,c,type):
     if (type == 0 and musavisa.question != ""):
         c.privmsg(nick, "Ratkaise ensin kyssäri:%s" %(musavisa.question))
         return
-    else if (type == 1 and leffavisa.question != ""):
+    elif (type == 1 and leffavisa.question != ""):
         c.privmsg(nick, "Ratkaise ensin kyssäri:%s" %(leffavisa.question))
         return
 

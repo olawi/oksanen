@@ -48,6 +48,7 @@ def check_question(self,e,c):
           
 def add_question(self,e,c,type):
     nick = nm_to_n(e.source())
+    line = e.arguments()[0]
     line = string.join(line.split()[1:], " ")
     line = line.split("|")
     if (len(line) == 2 and len(line[0])>0 and len(line[1])>0):

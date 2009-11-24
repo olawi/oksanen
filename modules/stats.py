@@ -75,6 +75,7 @@ def stats_join(self,e,c):
         if not nick in stats.nicks:
             cursor.execute("INSERT INTO user (user,firstseen) VALUES(%s,NOW());", [nick])
             stats.nicks.append(nick)
+        """
         else:
             cursor.execute("SELECT said, joins, join_date, averagetime, part_date from user WHERE user = %s;", [nick])
             said, joins, join_date, averagetime, part_date = cursor.fetchone()
@@ -82,7 +83,7 @@ def stats_join(self,e,c):
                 output = "Tervetuloa %s! Olit viimeksi kanavalla %s" %(nick,timediff(join_date,part_date))
                 output += " - keskim‰‰rin olet ollut %s" %(seconds_to_string(averagetime))
                 output += " | %s rivi‰ per kerta." %(said/joins)
-                c.privmsg(nick, output)
+                c.privmsg(nick, output)"""
         cursor.execute("UPDATE user SET joins = joins + 1, join_date = NOW() WHERE user = %s;", [nick])
         cursor.close()
 

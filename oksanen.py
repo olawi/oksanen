@@ -148,7 +148,9 @@ class Oksanen(SingleServerIRCBot):
         for event in self.cron.get_events(current_time):
             try:
                 func = event['cmd']
-                func(*event['args'],**event['kwargs'])
+                func(*event['args'], **event['kwargs'])
+                """decrement counter"""
+                self.cron.done(event)
             except Exception, ex:
                 print "\033[31mERROR\033[m (on_minute): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
@@ -372,17 +374,17 @@ class TimerManager(object):
 
 class Chronograph(object):
     """
-    Cronograph timestring format:
-        .---------------- minute (0 - 59)
-        |  .------------- hour (0 - 23)
-        |  |  .---------- day of month (1 - 31)
-        |  |  |  .------- month (1 - 12)
-        |  |  |  |  .---- day of week (0 - 6)
-        |  |  |  |  |
-       '*  *  *  *  *' to be executed
-    one element can be "*" or number or comma separated list of numbers (containing no spaces)
+    A Chronograph event added by add_event contains a dict corresponging to
+    datetime.datetime data: attrs (year, month, day, hour, minute) + function
+    datetime.weekday() are supported with tolerance of one minute. For
+    better resolution, use your own timer.
 
-    for example add_event('*  *  *  *  *',callback)
+    Example : add_event({'hour': 21, 'minute':[00,30]}, foo, arg1, arg2)
+    will fire the function foo every day at approximately 21:00 and 21:30.
+
+    If the input dictionary has an entry 'count', it will be decremented
+    after every time the event is fired and the element removed when 'count'
+    reaches zero.
     """
     crontab = []
     id = 0
@@ -390,42 +392,66 @@ class Chronograph(object):
     def add_event(self, timed, cmd, *args, **kwargs):
         cron_entry = {}        
         cron_entry['id'] = self.id
-        cron_entry['time'] = timed
+        cron_entry['timed'] = timed
         cron_entry['cmd'] = cmd
         cron_entry['args'] = args
         cron_entry['kwargs'] = kwargs
-        print repr(cron_entry)
+        if DEBUG:
+            print "cron.add_event adding event #%d"%self.id
+            print repr(cron_entry)
         self.crontab.append(cron_entry)
         self.id += 1
         return (self.id-1)
 
-    def delete_event(self,id):
+    def delete_event(self, idx):
         for event in self.crontab:
-            if event[0] == id:
+            if event['id'] == idx:
+                if DEBUG:
+                    print "cron.delete_event removing event #%d"%idx
                 self.crontab.pop(self.crontab.index(event))
+                if DEBUG > 1:
+                    print repr(self.crontab)
                 return True
         return False
 
-    def get_events(self,checktime):
+    def get_events(self, checktime):
         commandlist = []
         
         for event in self.crontab:
             rejected = False
-            for k in event['time'].keys():
+            for k in event['timed'].keys():
                 if hasattr(checktime,k):
-                    if not getattr(checktime,k) in event['time'][k]:
+                    if not getattr(checktime,k) in event['timed'][k]:
                         rejected = True
-                elif k == 'weekday' and checktime.weekday() not in event['time'][k]:
+                elif k == 'weekday' and checktime.weekday() not in event['timed'][k]:
                     rejected = True
             if not rejected:
                 commandlist.append(event)
             
         return commandlist
 
+    def done(self, event):
+        """called always after the event has been fired successfully"""
+        if 'count' in event['timed']:
+            try:
+                event['timed']['count'] -= 1
+                if DEBUG:
+                    print "cron.done: event #%d" % event['id']
+                    print repr(event)
+                if event['timed']['count'] < 1:
+                    self.delete_event(event['id'])
+            except Exception, ex:
+                print "\033[31mERROR\033[m (cron.done): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
+        else:
+            """not much else so far"""
+            if DEBUG:
+                print "cron.done: event #%d" % event['id']
+                print repr(event)
+                
     def reset(self):
         self.crontab = []
-        self.id = 0
-    
+        self.id = 0    
         
 def main():
     import sys

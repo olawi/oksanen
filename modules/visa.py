@@ -48,6 +48,13 @@ def check_question(self,e,c):
           
 def add_question(self,e,c,type):
     nick = nm_to_n(e.source())
+    if (type == 0 and musavisa.question != ""):
+        c.privmsg(nick, "Ratkaise ensin kyssäri:%s" %(musavisa.question))
+        return
+    else if (type == 1 and leffavisa.question != ""):
+        c.privmsg(nick, "Ratkaise ensin kyssäri:%s" %(leffavisa.question))
+        return
+
     line = e.arguments()[0]
     line = string.join(line.split()[1:], " ")
     line = line.split("|")

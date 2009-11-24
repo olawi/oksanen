@@ -211,7 +211,7 @@ class Oksanen(SingleServerIRCBot):
 
         line = e.arguments()[0]
 
-        if line[0] == "!":
+        if line.startswith("!"):
             self.do_pubcommand(e)
         return
 
@@ -274,7 +274,7 @@ class Oksanen(SingleServerIRCBot):
         line = e.arguments()[0]
 
         """privcommands"""
-        if line[0] == "!" and len(line)>1:
+        if line.startswith("!") and len(line) > 1:
             parts = line[1:].split()
             cmd = parts[0].lower()
             try:
@@ -283,6 +283,7 @@ class Oksanen(SingleServerIRCBot):
             except Exception, ex:
                 print "\033[31mERROR\033[m (do_command): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
+            return
 
         """The rest is admin shit"""
         if not is_admin(e.source()):

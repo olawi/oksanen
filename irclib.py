@@ -60,7 +60,7 @@ Current limitations:
 
 .. [IRC specifications] http://www.irchelp.org/irchelp/rfc/
 """
-
+from __future__ import with_statement # 2.5 only
 import bisect
 import re
 import select
@@ -70,11 +70,14 @@ import sys
 import time
 import types
 import traceback
+import threading
+from heapq import heappush, heappop
 
 import ircutil
 
 VERSION = 0, 4, 8
 DEBUG = 1
+
 
 # TODO
 # ----
@@ -368,6 +371,9 @@ class ServerNotConnectedError(ServerConnectionError):
 # use \n as message separator!  :P
 _linesep_regexp = re.compile("\r?\n")
 
+def _bl(s): return "\033[34m%s\033[m"%s
+def _ye(s): return "\033[33m%s\033[m"%s
+
 class ServerConnection(Connection):
     """This class represents an IRC server connection.
 
@@ -382,9 +388,14 @@ class ServerConnection(Connection):
         self.ssl = None
         self.output_encoding = 'utf-8'
         self.line_maxlen = 396
-        self.send_min_delay = 0.5
-        self.last_sent = 0
-
+        self.time_last_sent = 0
+        self.eta_next_send = 0
+        self.current_headroom = 10.0
+        self.msg_queue = []
+        self.qidx = 0
+        self.queue_lock = threading.Lock()
+        self.calls_on_queue = 0
+        
     def connect(self, server, port, nickname, password=None, username=None,
                 ircname=None, localaddress="", localport=0, ssl=False, ipv6=False):
         """Connect/reconnect to a server.
@@ -802,16 +813,199 @@ class ServerConnection(Connection):
             """fallback"""
             self.send_raw(r'%s'%text)
 
-    def send_raw(self, send_raw_string):
-        t = time.time()
-        if (t - self.last_sent) < self.send_min_delay:
-            self.irclibobj.execute_delayed(self.send_min_delay, self.send_raw, [send_raw_string])
-            print "send_raw: delayed at %s"%t
-            return
-        else:
-            self._send_raw(send_raw_string)
-            self.last_sent = time.time()
+    def get_headroom(self, message=''):
+        """
+        Calculate the message headroom according to old ircd
+
+        The initial and maximum value of headroom is 10 and it is
+        decreased for a value for every message sent, and increased
+        by the time difference from last message. If headroom < 0, we
+        should not send messages to server for a while.
+
+        see http://larve.net/people/hugo/2002/06/ircd-flood-control
+        """
+        if message:
+            if DEBUG > 1:
+                print "get_headroom: message: %s"%message
+            penalty = 1 + float(len(message))/100
             
+            try:
+                cmd = re.match(r'^(\w+)\b', message).group(1)
+                if DEBUG > 1:
+                    print "get_headroom: cmd: %s"%cmd
+                """Extra penalties"""
+                if cmd in ['NICK','JOIN','PART','PING','USERHOST']:
+                    penalty += 1
+                elif cmd in ['TOPIC','KICK','MODE']:
+                    penalty += 2
+                elif cmd in ['WHO']:
+                    penalty += 3
+                elif cmd in ['INFO']:
+                    penalty += 5
+            except Exception, ex:
+                if DEBUG:
+                    print "get_headroom: %s"%ex
+        else:
+            if DEBUG > 1:
+                print "get_headroom: no message"
+            penalty = 0
+
+        t = time.time()
+        tdiff = (t - self.time_last_sent)
+        estimated_headroom = min(10.0, (self.current_headroom + tdiff - penalty))
+        if DEBUG > 1:
+            print "get_headroom: (%f %f -%f)"%(self.current_headroom, tdiff, penalty)
+        return float(estimated_headroom)
+
+    def get_msg_priority(self, message):
+        """Returns the scheduling priority for a message.
+
+        A very simple scheme.
+        """
+        k = 10
+        try:
+            cmd = re.match(r'^(\w+)\b',message).group(1)
+            if cmd in ['PING', 'PONG', 'MODE', 'KICK', 'JOIN', 'ERROR', 'PART']:
+                k = 10**0
+            else:
+                k = 10**1
+        finally:
+            self.qidx += 1
+            return k * self.qidx
+        
+    def schedule_msg_queue(self):
+        """Schedules buffered messages to be written.
+        
+        Estimates how long it takes for the server to accept more data
+        and schedules process_mgs_queue call using execute_delayed.
+
+        self.msg_queue elements are (priority, message)
+
+        A higher-priority message appearing at the top (bottom)
+        of the heap can force an extra call.
+        """
+        if DEBUG:
+            print _bl("* schedule_msg_queue: %d calls %d deep" %
+                      (self.calls_on_queue,len(self.msg_queue)))
+
+        now = time.time()
+        with self.queue_lock:
+            try:
+                from_queue = heappop(self.msg_queue)
+                delay = - self.get_headroom(from_queue[1])
+                heappush(self.msg_queue, from_queue)
+            except Exception, ex:
+                if DEBUG:
+                    print "\033[31mERROR\033[m schedule_msg_queue: %s"%ex
+                    if DEBUG > 1: traceback.print_stack()
+                return
+            
+            eta_this_msg = now + delay
+            """If there are no calls scheduled or a higher-priority
+            call forces us to """
+            if self.msg_queue and (self.calls_on_queue < 1 or
+                                   eta_this_msg < self.eta_next_send) :
+                self.calls_on_queue += 1
+                if DEBUG:
+                    print _bl("* schedule_msg_queue: scheduled, delay = %f" % (delay))
+                self.eta_next_send = now + delay
+                self.execute_delayed(delay, self.process_msg_queue)
+
+    def process_msg_queue(self):
+        """ """
+        if DEBUG:
+            print _bl("** process_msg_queue: %d calls %d deep ***" % \
+                          (self.calls_on_queue, len(self.msg_queue)))
+        with self.queue_lock:
+            self.calls_on_queue -= 1
+        if self.send_raw():
+            """success"""
+            if DEBUG:
+                print _bl("** process_msg_queue: success: %d calls %d deep" % \
+                              (self.calls_on_queue, len(self.msg_queue)))
+        else:
+            if DEBUG:
+                print _bl("** process_msg_queue: failure: %d calls %d deep" % \
+                              (self.calls_on_queue, len(self.msg_queue)))
+            """re-schedule"""
+            self.schedule_msg_queue()
+
+        with self.queue_lock:
+            """reset priority counter when empty"""
+            if not self.msg_queue:
+                self.qidx = 0
+
+        if self.msg_queue and not self.calls_on_queue:
+            self.schedule_msg_queue() 
+                
+    def send_raw(self, send_raw_string=''):
+        """Send raw string to server with flood control.
+        """
+        from_queue = []
+
+        if not send_raw_string:
+            try:
+                with self.queue_lock:
+                    from_queue = heappop(self.msg_queue)
+                send_raw_string = from_queue[1]
+                if DEBUG > 1:
+                    print "send_raw: popped (#%d) %d calls %d left"%(from_queue[0],
+                                                                     self.calls_on_queue,
+                                                                     len(self.msg_queue))
+            except Exception, ex:
+                """empty input, empty queue """
+                if DEBUG:
+                    print "\033[31mERROR\033[m send_raw: %s"%ex
+                    if DEBUG > 1: traceback.print_stack()
+                return False
+        elif self.msg_queue:
+            """if there are lines in the queue, schedule from there"""
+            with self.queue_lock:
+                try:
+                    heappush(self.msg_queue, (self.get_msg_priority(send_raw_string), send_raw_string))
+                except Exception, ex:
+                    if DEBUG:
+                        print "\033[31mERROR\033[m send_raw: %s"%ex
+                        if DEBUG > 1: traceback.print_stack()
+            self.schedule_msg_queue()
+            return False
+            
+        """headroom estimate """
+        headroom_est = self.get_headroom(send_raw_string)
+        
+        if DEBUG > 1:
+            print "send_raw: headroom = %f" % headroom_est
+        
+        if headroom_est < 0:
+            if DEBUG:
+                print _ye("send_raw: floodbounce, headroom %f" % self.get_headroom())
+            """queue message"""
+            with self.queue_lock:
+                try:
+                    if from_queue:
+                        heappush(self.msg_queue, from_queue)
+                    else:
+                        heappush(self.msg_queue, (self.get_msg_priority(send_raw_string), send_raw_string))
+                except Exception, ex:
+                    if DEBUG:
+                        print "\033[31mERROR\033[m send_raw: %s"%ex
+                        if DEBUG > 1: traceback.print_stack()
+            self.schedule_msg_queue()
+            return False
+        else:
+            try:
+                """update headroom with penalty"""
+                self.current_headroom = self.get_headroom(send_raw_string)
+                self._send_raw(send_raw_string)
+                """the actual headroom after sending"""
+                if DEBUG > 1:
+                    print "send_raw: headroom after sending: %f" % self.get_headroom()
+            except Exception, ex:
+                print "\033[31mERROR\033[m (send_raw): %s"%ex 
+                if DEBUG > 1: traceback.print_stack()
+                return False
+            return True
+                
     def _send_raw(self, send_raw_string):
         """Send raw string to the server.
 
@@ -826,6 +1020,7 @@ class ServerConnection(Connection):
                 self.socket.send(send_raw_string + "\r\n")
             if DEBUG:
                 print "\033[33mTO SERVER:\033[m", send_raw_string
+            self.time_last_sent = time.time()
         except socket.error, x:
             # Ouch!
             self.disconnect("Connection reset by peer.")

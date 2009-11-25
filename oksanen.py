@@ -283,11 +283,9 @@ class Oksanen(SingleServerIRCBot):
             except Exception, ex:
                 print "\033[31mERROR\033[m (do_command): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
-            return
 
         """The rest is admin shit"""
         if not is_admin(e.source()):
-            c.notice(nick, "En tajua: " + cmd)
             return
         
         if cmd == "reset":

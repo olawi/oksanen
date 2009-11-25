@@ -83,7 +83,7 @@ def _urlhandler(self, e, c):
         cursor.execute("""SELECT USER, DATE FROM url WHERE URI = %s;""", [uri])
         for row in cursor.fetchall():
             if nick != row[0]:
-                c.privmsg(e.target(), "%W! (%s %s) - %s"%(nick, row[0], row[1], pagetitle))
+                c.privmsg(e.target(), "W! (%s %s) - %s"%(nick, row[0], row[1], pagetitle))
                 return #wanha
             
         command = """INSERT INTO url (USER, URI, TITLE) VALUES (%s, %s, %s); """

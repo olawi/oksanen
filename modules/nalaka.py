@@ -15,8 +15,8 @@ from ircutil import bold, recode
 kaenkky_url = 'http://www.kaenkky.com/txt/'
                 
 def setup(self):
-    self.commands['näläkä'] = nalaka
-    self.commands['nalaka'] = nalaka
+    self.pubcommands['näläkä'] = nalaka
+    self.pubcommands['nalaka'] = nalaka
 
 def get_kaenkky(self,query):
 

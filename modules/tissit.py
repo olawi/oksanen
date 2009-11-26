@@ -12,7 +12,7 @@ tissit_cmdlist = ['tissit', 'pillu', 'perse', 'pano', 'lesbot', 'suihinotto']
 
 def setup(self):
     for cmd in tissit_cmdlist:
-        self.commands[cmd] = tissit
+        self.pubcommands[cmd] = tissit
     try:
         tissit.urls = self.moduledata['tissit']
     except:

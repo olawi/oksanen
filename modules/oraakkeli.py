@@ -11,7 +11,7 @@ import ircutil
 oraakkeli_url = "http://www.lintukoto.net/viihde/oraakkeli/index.php?html=0&kysymys="
 
 def setup(self):
-    self.commands['?'] = oraakkeli
+    self.pubcommands['?'] = oraakkeli
     
 def oraakkeli(self,e,c):
 

@@ -8,7 +8,7 @@ import random
 from wordgame_wordlist import wordgame_wordlist
 
 def setup(self):
-    #self.commands['sana'] = sana
+    #self.pubcommands['sana'] = sana
     #self.pubhandlers.append(sanaChecker)
     sana.current_word = ""
     sana.current_word_shuffle = ""

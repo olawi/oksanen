@@ -6,7 +6,7 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 import string
 
 def setup(self):
-    self.commands['log'] = log
+    self.pubcommands['log'] = log
     log.url = "http://rosvosektori.wipsl.com/numero/#logs"
 
 def log(self, e, c):

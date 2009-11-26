@@ -12,7 +12,7 @@ from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
 def setup(self):
-    self.commands['keikat'] = keikat
+    self.pubcommands['keikat'] = keikat
 
 class Writer():
     def __init__(self, city):

@@ -7,7 +7,7 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 import random
 
 def setup(self):
-    self.commands['arvo'] = arvo
+    self.pubcommands['arvo'] = arvo
 
 def arvo(self, e, c):
     nick = nm_to_n(e.source())

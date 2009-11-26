@@ -2,12 +2,12 @@
 # coding=utf-8
 
 def setup(self):
-    self.commands['help'] = help
+    self.pubcommands['help'] = help
 
 def help(self, e, c):
     """help"""
     out = 'komennot:'
-    k = self.commands.keys()
+    k = self.pubcommands.keys()
     k.sort()
     for s in k:
         out += " !%s"%s

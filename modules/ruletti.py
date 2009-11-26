@@ -12,7 +12,7 @@ ruletti_wait = 5*60
 ruletti_bantime = 1
 
 def setup(self):
-    self.commands['ruletti'] = ruletti
+    self.pubcommands['ruletti'] = ruletti
     ruletti.shooters = {}
     ruletti.warnings = {}
 

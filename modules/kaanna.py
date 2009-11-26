@@ -92,8 +92,8 @@ class parser(htmllib.HTMLParser):
             self.output += "%s, "%self.save_end()
 
 def setup(self):
-    self.commands['käännä'] = kaanna
-    self.commands['kaanna'] = kaanna
+    self.pubcommands['käännä'] = kaanna
+    self.pubcommands['kaanna'] = kaanna
 
 def kaanna(self,e,c):
 

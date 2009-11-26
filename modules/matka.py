@@ -17,7 +17,7 @@ tie_url = 'http://alk.tiehallinto.fi/cgi-bin/pq9.cgi'
 tie_querystring = 'MISTÄ=%s&MIHIN=%s&NOPEUS=80'
 
 def setup(self):
-    self.commands['matka'] = matka
+    self.pubcommands['matka'] = matka
 
 def matka(self,e,c):
 

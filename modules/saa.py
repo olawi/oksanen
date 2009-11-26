@@ -133,8 +133,8 @@ def get_willab(self):
     return p.weatherdata
 
 def setup(self):
-    self.commands['sää'] = saa 
-    self.commands['saa'] = saa
+    self.pubcommands['sää'] = saa 
+    self.pubcommands['saa'] = saa
     saa.timelast = time.time()
     
 def saa(self,e,c):

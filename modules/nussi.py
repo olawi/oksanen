@@ -13,7 +13,7 @@ nusphrases = [ r"%s: %s olis vailla!",
                r"%s: %s kaipais miurautusta!"]
 
 def setup(self):
-    self.commands['nussi'] = nussi
+    self.pubcommands['nussi'] = nussi
 
 def nussi(self, e, c):
     """ NUSNUS """

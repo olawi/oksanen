@@ -37,7 +37,7 @@ class opener(FancyURLopener):
 
 def setup(self):
     self.pubhandlers.append(urlhandler)
-    self.commands['url'] = urlshow
+    self.pubcommands['url'] = urlshow
     urlshow.url = "http://rosvosektori.wipsl.com/numero/#urls"
 
 def urlshow(self, e, c):

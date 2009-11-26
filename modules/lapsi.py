@@ -11,7 +11,7 @@ from girlnames import girlnames
 from girlnames import dudenames
 
 def setup(self):
-    self.commands['lapsi'] = lapsi
+    self.pubcommands['lapsi'] = lapsi
 
 def lapsi(self, e, c):
     nick = nm_to_n(e.source())

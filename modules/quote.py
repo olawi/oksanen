@@ -42,7 +42,7 @@ class parser(htmllib.HTMLParser):
         self.state = 0;
         
 def setup(self):
-    self.commands['quote'] = quote
+    self.pubcommands['quote'] = quote
 
 def quote(self,e,c):
 

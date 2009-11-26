@@ -56,7 +56,7 @@ class Oksanen(SingleServerIRCBot):
         self.cron = Chronograph()
         self.setup()
         print "Modules:",self.modules
-        print "Commands:",self.commands
+        print "Commands:",self.pubcommands
         print "Pub Handlers:",self.pubhandlers
         print "Join Handlers:",self.joinhandlers
         print "Part Handlers:",self.parthandlers
@@ -110,11 +110,12 @@ class Oksanen(SingleServerIRCBot):
             try:
                 self.db = MySQLdb.connect(**G_SQL_PARAMS)
             except Exception, ex:
-                print >> sys.stderr, "\033[31mError\033[m (reset) on opening DB: %s"%ex                   
+                print >> sys.stderr, "\033[31mError\033[m (reset) on opening DB: %s"%ex
+                
     def reload(self):
         """reload calls self.terminate on all modules and reloads them"""
         
-        self.commands = {}
+        self.pubcommands = {}
         self.privcommands = {}
         self.pubhandlers = []
         self.joinhandlers = []
@@ -280,7 +281,7 @@ class Oksanen(SingleServerIRCBot):
             parts = line[1:].split()
             cmd = parts[0].lower()
             try:
-                func = self.commands[cmd]
+                func = self.pubcommands[cmd]
                 ircutil.run_once(0, func, [self, e, c])
             except Exception, ex:
                 print "\033[31mERROR\033[m (do_pubcommand): %s"%ex
@@ -346,7 +347,7 @@ class Oksanen(SingleServerIRCBot):
             parts = line[1:].split()
             cmd = parts[0].lower()
             try:
-                func = self.commands[cmd]
+                func = self.pubcommands[cmd]
                 """query source -> target"""
                 e._target = e.source()
                 ircutil.run_once(0, func, [self, e, c])

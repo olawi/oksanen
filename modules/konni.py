@@ -18,8 +18,8 @@ menox_re = r'\blähd?(en|tis|e?tään)|\bmen(in|en|is|nää|o(x|ks))|\bmeen'
 def setup(self):
 
     self.pubhandlers.append(konni_track)
-    self.commands['könniset'] = konni
-    self.commands['ryyppyseura'] = konni
+    self.pubcommands['könniset'] = konni
+    self.pubcommands['ryyppyseura'] = konni
     try :
         konni.konniset = self.moduledata['konni']
     except:

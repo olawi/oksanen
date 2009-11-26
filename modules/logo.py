@@ -5,7 +5,7 @@ from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
 def setup(self):
-    self.commands['logo'] = logo
+    self.pubcommands['logo'] = logo
 
 def logo(self, e, c):
     nick = nm_to_n(e.source())

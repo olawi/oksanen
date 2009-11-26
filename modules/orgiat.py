@@ -17,7 +17,7 @@ fourway = [ r"On %s ottanut prestoja, ei tunne estoja, %s katsoo ja runkkaa kun 
 
 
 def setup(self):
-    self.commands['orgiat'] = orgiat
+    self.pubcommands['orgiat'] = orgiat
 
 def orgiat(self, e, c):
     """ NUSNUS """

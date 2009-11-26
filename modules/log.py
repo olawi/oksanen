@@ -7,7 +7,7 @@ import string
 
 def setup(self):
     self.commands['log'] = log
-    log.url = "http://rosvosektori.wipsl.com/numero/oksanen/#logs"
+    log.url = "http://rosvosektori.wipsl.com/numero/#logs"
 
 def log(self, e, c):
     nick = nm_to_n(e.source())

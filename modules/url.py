@@ -37,6 +37,11 @@ class opener(FancyURLopener):
 
 def setup(self):
     self.pubhandlers.append(urlhandler)
+    self.commands['url'] = urlshow
+    urlshow.url = "http://rosvosektori.wipsl.com/numero/#urls"
+
+def urlshow(self, e, c):
+    c.privmsg(e.target(), "Net on netissä: %s"%(urlshow.url))
 
 def urlhandler(self, e, c):
     run_once(0, _urlhandler, [self, e, c])

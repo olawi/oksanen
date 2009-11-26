@@ -50,7 +50,6 @@ def _urlhandler(self, e, c):
 
     line = e.arguments()[0]
     
-    url_re = re.compile(url_s)
     m = re.search(url_re,line)
     
     if not m:

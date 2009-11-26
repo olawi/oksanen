@@ -12,7 +12,7 @@ from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 from ircutil import recode, run_once
 
-url_s = '(((https?|ftp):\\/\\/)|www\\.)(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([a-zA-Z0-9\\-]+\\.)*[a-zA-Z0-9\\-]+\\.(com|net|org|info|biz|gov|name|edu|[a-zA-Z][a-zA-Z]))(:[0-9]+)?((\\/|\\?)[^ "]*[^,;\\.:">)])?'
+url_re = re.compile(r'(((https?|ftp):\/\/)|www\.)(([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)|([a-zA-Z0-9\-]+\.)*[a-zA-Z0-9\-]+\.(com|net|org|info|biz|gov|name|edu|[a-zA-Z][a-zA-Z]))(:[0-9]+)?((\/|\?)[^ "]*[^,;\.:">)])?')
 
 class parser(SGMLParser):
     def __init__(self, content_start_comment='', content_end_comment=''):
@@ -36,7 +36,7 @@ class opener(FancyURLopener):
     version = 'Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.246.0 Safari/532.5'
 
 def setup(self):
-    self.pubhandlers.append(urlhandler)
+    self.repubhandlers.update({ url_re : urlhandler})
     self.pubcommands['url'] = urlshow
     urlshow.url = "http://rosvosektori.wipsl.com/numero/#urls"
 

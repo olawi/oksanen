@@ -14,10 +14,11 @@ DEBUG = 1
 konni_re = r'[^!]\bk(ö|ä)nn(i|ä)|korks|tölks|reub|\briipa?s|\bsnuu|\bolus?(en|t+a|el)|\bkal(i|j)+a?|\bbaari'
 nukku_re = r'\bnuq|\bnuk(s|k)u|\böitä|\böö+t'
 menox_re = r'\blähd?(en|tis|e?tään)|\bmen(in|en|is|nää|o(x|ks))|\bmeen'
+total_re = re.compile(r'%s|%s|%s'%(konni_re,nukku_re,menox_re))
 
 def setup(self):
 
-    self.pubhandlers.append(konni_track)
+    self.repubhandlers.update({total_re : konni_track})
     self.pubcommands['könniset'] = konni
     self.pubcommands['ryyppyseura'] = konni
     try :
@@ -34,10 +35,6 @@ def konni_track(self, e, c):
     """hox: no need to compile the regexps, they are cached anyway"""
 
     line = e.arguments()[0]
-    m = re.search('%s|%s|%s'%(konni_re,nukku_re,menox_re),line,re.I)
-    
-    if not m:
-        return
     
     nick = nm_to_n(e.source())
     now = datetime.now()

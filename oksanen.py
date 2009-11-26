@@ -52,22 +52,24 @@ class Oksanen(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port, sqlparams):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.channel = channel
+        self.nickname = nickname
         self.timer = TimerManager()
         self.cron = Chronograph()
         self.setup()
-        print "Modules:",self.modules
-        print "Commands:",self.pubcommands
-        print "Pub Handlers:",self.pubhandlers
-        print "Join Handlers:",self.joinhandlers
-        print "Part Handlers:",self.parthandlers
-        print "Quit Handlers:",self.quithandlers
-
-        self.nickname = nickname
+        print "\033[33mself.modules : \033[m",self.modules
+        print "\033[33mself.pubcommands : \033[m",self.pubcommands
+        print "\033[33mself.repubhandlers : \033[m",self.repubhandlers
+        print "\033[33mself.pubhandlers : \033[m",self.pubhandlers
+        print "\033[33mself.joinhandlers : \033[m",self.joinhandlers
+        print "\033[33mself.parthandlers : \033[m",self.parthandlers
+        print "\033[33mself.quithandlers : \033[m",self.quithandlers
 
         if hasSql:
             sql_login = dict(zip(['host', 'user', 'passwd', 'db'], sqlparams[:]))
             G_SQL_PARAMS.update(sql_login)
             self.db = MySQLdb.connect(**G_SQL_PARAMS)
+
+        print "%s ready to roll! Joining %s in %s" % (self.nickname, self.channel, server)
 
     def setupTimer(self):
         """setup timer"""
@@ -118,6 +120,7 @@ class Oksanen(SingleServerIRCBot):
         self.pubcommands = {}
         self.privcommands = {}
         self.pubhandlers = []
+        self.repubhandlers = {}
         self.joinhandlers = []
         self.parthandlers = []
         self.quithandlers = []
@@ -149,15 +152,18 @@ class Oksanen(SingleServerIRCBot):
                 module = imp.load_source(name, filename)
             except Exception, ex: 
                 print >> sys.stderr, "\033[31mError\033[m loading %s: %s (in oksanen.py)" % (name, ex)
-            else: 
-                if hasattr(module, 'setup'): 
-                    module.setup(self)
+            else:
+                try:
+                    if hasattr(module, 'setup'): 
+                        module.setup(self)
 
-                self.modules.append(module)
-                modulenames.append(name)
+                        self.modules.append(module)
+                        modulenames.append(name)
+                except Exception, ex:
+                    print >> sys.stderr, "\033[31mError\033[m in setup" % name
 
         if modulenames: 
-            print >> sys.stderr, 'Registered modules:', ', '.join(modulenames)
+            print >> sys.stderr, '\033[33mRegistered modules:\033[m', ', '.join(modulenames)
         else: 
             print >> sys.stderr, "Warning: Couldn't find any modules"
 
@@ -210,9 +216,13 @@ class Oksanen(SingleServerIRCBot):
         nick = nm_to_n(e.source())
         entry = ircutil.recode(e._arguments[0])
         if hasSql:
-            cursor = self.db.cursor()
-            cursor.execute("""INSERT INTO topic (entry, nick) VALUES (%s, %s)""", [entry, nick])
-        
+            try:
+                cursor = self.db.cursor()
+                cursor.execute("""INSERT INTO topic (entry, nick) VALUES (%s, %s)""", [entry, nick])
+            except Exception, ex:
+                print "\033[31mERROR\033[m (on_topic): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
+
     def on_privmsg(self, c, e):
 
         e._arguments[0] = ircutil.recode(e._arguments[0])
@@ -222,6 +232,16 @@ class Oksanen(SingleServerIRCBot):
 
         e._arguments[0] = ircutil.recode(e._arguments[0])
 
+        for regex in self.repubhandlers.keys():
+            """repubhanlers is a dict with {regexp, function} as key, value.
+            the function will not be called unless the regexp matches."""
+            if re.search(regex, e.arguments()[0]):
+                try:
+                     self.repubhandlers[regex](self, e, c)
+                except Exception, ex:
+                    print "\033[31mERROR\033[m (on_pubmsg): %s"%ex
+                    if DEBUG > 1: traceback.print_stack()
+                    
         for func in self.pubhandlers:
             try:
                 func(self, e, c)

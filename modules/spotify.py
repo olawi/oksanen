@@ -50,7 +50,7 @@ class parser(htmllib.HTMLParser):
         self.save_bgn()
 
 def setup(self):
-    self.pubhandlers.append(spotify)
+    self.repubhandlers.update({spotify_uri_re : spotify})
 
 def spotify(self, e, c):
     run_once(0, _spotify, [self, e, c])

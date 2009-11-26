@@ -12,7 +12,7 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 from ircutil import run_once
 
 spotify_url = 'http://spotify.url.fi/'
-spotify_uri_re = '(http:\/\/open.spotify.com\/|spotify:)(album|artist|track)([:\/])([a-zA-Z0-9]+)\/?'
+spotify_uri_re = re.compile(r'(http:\/\/open.spotify.com\/|spotify:)(album|artist|track)([:\/])([a-zA-Z0-9]+)\/?')
 
 class parser(htmllib.HTMLParser):
 
@@ -59,14 +59,13 @@ def _spotify(self, e, c):
     
     line = e.arguments()[0]
     
-    sp_re = re.compile(spotify_uri_re)
-    m = re.search(sp_re,line)
+    m = re.search(spotify_uri_re, line)
     
     if not m:
         return
 
     try:
-        fd = urllib.urlopen("%s%s/%s"%(spotify_url,m.group(2),m.group(4)))
+        fd = urllib.urlopen("%s%s/%s"%(spotify_url, m.group(2), m.group(4)))
         page = fd.read()
         fd.close
     

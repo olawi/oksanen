@@ -37,20 +37,31 @@ def get_tissit(self, url, cmd, thumbs=False):
         print "tissit: using cached urls for %s"%cmd
     except:
         print "tissit: retrieving index for %s"%(url%cmd)
-        tissit.urls[cmd] = get_tissit_index(self, url, cmd)
-        page = random.choice(tissit.urls[cmd])
+        try:
+            tissit.urls[cmd] = get_tissit_index(self, url, cmd)
+            page = random.choice(tissit.urls[cmd])
+        except Exception, ex:
+            print "\033[31mERROR\033[m (tissit): %s"%ex
+            return "sori, ei tänään."
 
     try:
         fd = urllib2.urlopen(url%cmd + page)
     except:
         """links outdated?"""
         print "tissit: index for %s outdated, refreshing..."%(url%cmd)
-        tissit.urls[cmd] = get_tissit_index(self, url, cmd)
-        page = random.choice(tissit.urls[cmd])
+        try:
+            tissit.urls[cmd] = get_tissit_index(self, url, cmd)
+            page = random.choice(tissit.urls[cmd])
+        except Exception, ex:
+            print "\033[31mERROR\033[m (tissit): %s"%ex
+            return "sori, ei tänään."
+    try:
         fd = urllib2.urlopen(url%cmd + page)
-
-    data = fd.read()
-    fd.close()
+        data = fd.read()
+        fd.close()
+    except Exception, ex:
+        print "\033[31mERROR\033[m (tissit): %s"%ex
+        return "sori, ei tänään."
     
     # return url to image
     if thumbs:

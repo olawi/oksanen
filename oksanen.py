@@ -33,6 +33,9 @@ sys.path.append("./modules")
 
 DEBUG = 1
 
+if hasSql: 
+    G_SQL_PARAMS = {'charset':'utf8',
+                    'use_unicode':True}
 def debug(text):
     if DEBUG:
         print text
@@ -44,7 +47,7 @@ def is_admin(source):
         return True
     else:
         return False
-
+    
 class Oksanen(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port, sqlparams):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
@@ -62,7 +65,9 @@ class Oksanen(SingleServerIRCBot):
         self.nickname = nickname
 
         if hasSql:
-            self.db = MySQLdb.connect(host=sqlparams[0], user=sqlparams[1], passwd=sqlparams[2], db = sqlparams[3], charset = "utf8", use_unicode = True)
+            sql_login = dict(zip(['host', 'user', 'passwd', 'db'], sqlparams[:]))
+            G_SQL_PARAMS.update(sql_login)
+            self.db = MySQLdb.connect(**G_SQL_PARAMS)
 
     def setupTimer(self):
         """setup timer"""
@@ -82,7 +87,9 @@ class Oksanen(SingleServerIRCBot):
 
     def reset(self):
         """reset clears all module data and buffers and resets modules
-        after calling self.terminate() on modules"""
+        after calling self.terminate() on modules.
+        Also resets self.db connection
+        """
         try:
             for module in self.modules:
                 if hasattr(module, 'terminate'): 
@@ -90,8 +97,20 @@ class Oksanen(SingleServerIRCBot):
         except:
             print >> sys.stderr, "No running modules found, resetting.."
 
-        self.setup()
-        
+        self.reset_db()
+        self.setup()        
+
+    def reset_db(self):
+        """closes and reconnects to DB"""
+        if hasSql:
+            try:
+                self.db.close()
+            except Exception, ex:
+                print >> sys.stderr, "\033[31mError\033[m (reset) on closing DB: %s"%ex
+            try:
+                self.db = MySQLdb.connect(**G_SQL_PARAMS)
+            except Exception, ex:
+                print >> sys.stderr, "\033[31mError\033[m (reset) on opening DB: %s"%ex                   
     def reload(self):
         """reload calls self.terminate on all modules and reloads them"""
         

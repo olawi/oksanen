@@ -61,6 +61,7 @@ class Oksanen(SingleServerIRCBot):
         print "\033[33mself.repubhandlers : \033[m",self.repubhandlers
         print "\033[33mself.pubhandlers : \033[m",self.pubhandlers
         print "\033[33mself.joinhandlers : \033[m",self.joinhandlers
+        print "\033[33mself.kickhandlers : \033[m",self.kickhandlers
         print "\033[33mself.parthandlers : \033[m",self.parthandlers
         print "\033[33mself.quithandlers : \033[m",self.quithandlers
 
@@ -124,6 +125,7 @@ class Oksanen(SingleServerIRCBot):
         self.joinhandlers = []
         self.parthandlers = []
         self.quithandlers = []
+        self.kickhandlers = []
         self.whoiscallbacks = []
 
         """call self.terminate on modules, if any"""
@@ -202,6 +204,14 @@ class Oksanen(SingleServerIRCBot):
                 func(self, e, c)
             except Exception, ex:
                 print "\033[31mERROR\033[m (on_part): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
+
+    def on_kick(self, c , e):
+        for func in self.kickhandlers:
+            try:
+                func(self, e, c)
+            except Exception, ex:
+                print "\033[31mERROR\033[m (on_kick): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
                 
     def on_quit(self, c , e):

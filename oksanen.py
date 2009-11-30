@@ -108,6 +108,7 @@ class Oksanen(SingleServerIRCBot):
         if hasSql:
             try:
                 self.db.close()
+                self.db = None
             except Exception, ex:
                 print >> sys.stderr, "\033[31mError\033[m (reset) on closing DB: %s"%ex
             try:
@@ -347,7 +348,12 @@ class Oksanen(SingleServerIRCBot):
             print >> sys.stderr, "cmd: RELOAD modules"
             self.reload()
             c.notice(nick, cmd)
-            
+
+        elif cmd == "reset_db":
+            print >> sys.stderr, "cmd: RESET database"
+            self.reset_db()
+            c.notice(nick, cmd)
+                        
         elif cmd.startswith("raw "):
             print >> sys.stderr, "cmd: %s"%cmd
             s = re.sub('^raw ','',cmd)

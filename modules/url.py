@@ -72,23 +72,33 @@ def _urlhandler(self, e, c):
     page = fd.read()
     fd.close()
 
-    p = parser()
-
-    try :
-        p.feed(page)
-        pagetitle = recode(p.output)
-    except:
+    if fd.headers.gettype() == 'text/html':
+        p = parser()
+        try :
+            p.feed(page)
+            pagetitle = recode(p.output)
+        except:
+            print "url.py: parseri kosahti, jatketaan..."
+    elif fd.headers.getmaintype() == 'image':
+        # IF there were anything useful in the headers..
+        pagetitle = fd.headers.gettype()
+    else:
         pagetitle = ''
-        print "url.py: parseri kosahti, jatketaan..."
-
+            
     if hasSql:
         cursor = self.db.cursor()
         
         cursor.execute("""SELECT USER, DATE FROM url WHERE URI = %s;""", [uri])
         for row in cursor.fetchall():
             if nick != row[0]:
-                c.privmsg(e.target(), "W! (%s %s) - %s"%(nick, row[0], row[1], pagetitle))
-                return #wanha
+                d = row[1]
+                dstr = "%s.%s.%s %02d:%02d"%(d.day, d.month, d.year, d.hour, d.minute)
+                c.privmsg(e.target(), "W! - '%s' - (%s %s)"%(pagetitle, row[0], dstr))
+                return 
+            else:
+                """repeat the whole title, It has possibly been changed"""
+                c.privmsg(e.target(), "(%s)"%pagetitle)
+                return
             
         command = """INSERT INTO url (USER, URI, TITLE) VALUES (%s, %s, %s); """
         cursor.execute(command, [nick, uri, pagetitle] )

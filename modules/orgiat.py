@@ -24,7 +24,7 @@ def orgiat(self, e, c):
     nick = nm_to_n(e.source())
 
     for chname, chobj in self.channels.items():
-        if e.target() == chname:
+        if e.target().lower() == chname.lower():
             users = chobj.users()
 
             if random.randint(0,1) == 0:

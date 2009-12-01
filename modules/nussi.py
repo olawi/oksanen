@@ -20,10 +20,10 @@ def nussi(self, e, c):
     nick = nm_to_n(e.source())
 
     for chname, chobj in self.channels.items():
-        if e.target() == chname:
+        if e.target().lower() == chname.lower():
             users = chobj.users()
 
-            fuckee = users[random.randint(0,len(users)-1)]
+            fuckee = random.choice(users)
             if fuckee == nick:
                 c.privmsg(e.target(), "%s: fap fap fap fap fap fap FAP *GNUT*!"%nick)
             else:

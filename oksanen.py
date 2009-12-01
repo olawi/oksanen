@@ -47,7 +47,50 @@ def is_admin(source):
         return True
     else:
         return False
-    
+
+class OhMySQLdb():
+    """Wraps the SQL functionality with connection checking"""
+    conn = None
+
+    def connect(self):
+        try:
+            self.conn = MySQLdb.connect(**G_SQL_PARAMS)
+        except (AttributeError, MySQLdb.OperationalError), ex:
+            print >> sys.stderr, "\033[31mERROR\033[m (OhMySQLdb.connect): %s"%ex
+
+    def cursor(self):
+        try:
+            c = self.conn.cursor()
+            """do something to cause an exception if the connection is dead"""
+            c.execute('SELECT VERSION(), CURRENT_DATE')
+            return c
+        except (AttributeError, MySQLdb.OperationalError), ex:
+            print >> sys.stderr, "\033[31mERROR\033[m (OhMySQLdb.cursor): %s"%ex
+            print "SQL connection lost. Reconnecting..."
+            self.connect()
+            return self.conn.cursor()
+
+    def query(self, sql, *args, **kwargs):
+        """connection-checking wrapper to cursor.execute()"""
+        try:
+            c = self.conn.cursor()
+            c.execute(sql, *args, **kwargs)
+            return c
+        except (AttributeError, MySQLdb.OperationalError), ex:
+            print >> sys.stderr, "\033[31mERROR\033[m (OhMySQLdb.query): %s"%ex
+            print "SQL connection lost. Reconnecting..."
+            self.connect()
+            c = self.conn.cursor()
+            try:
+                c.execute(sql, *args, **kwargs)
+            except (AttributeError, MySQLdb.OperationalError), ex:
+                print >> sys.stderr, "\033[31mERROR\033[m (OhMySQLdb.query): %s"%ex
+                print "Reconnection failed. No SQL connection."                
+            return c
+
+    def close(self):
+        self.conn.close()
+               
 class Oksanen(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port, sqlparams):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
@@ -68,7 +111,8 @@ class Oksanen(SingleServerIRCBot):
         if hasSql:
             sql_login = dict(zip(['host', 'user', 'passwd', 'db'], sqlparams[:]))
             G_SQL_PARAMS.update(sql_login)
-            self.db = MySQLdb.connect(**G_SQL_PARAMS)
+            self.db = OhMySQLdb()
+            self.db.connect()
 
         print "%s ready to roll! Joining %s in %s" % (self.nickname, self.channel, server)
 
@@ -108,11 +152,10 @@ class Oksanen(SingleServerIRCBot):
         if hasSql:
             try:
                 self.db.close()
-                self.db = None
             except Exception, ex:
                 print >> sys.stderr, "\033[31mError\033[m (reset) on closing DB: %s"%ex
             try:
-                self.db = MySQLdb.connect(**G_SQL_PARAMS)
+                self.db.connect()
             except Exception, ex:
                 print >> sys.stderr, "\033[31mError\033[m (reset) on opening DB: %s"%ex
                 

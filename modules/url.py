@@ -86,9 +86,7 @@ def _urlhandler(self, e, c):
         pagetitle = ''
             
     if hasSql:
-        cursor = self.db.cursor()
-        
-        cursor.execute("""SELECT USER, DATE FROM url WHERE URI = %s;""", [uri])
+        cursor = self.db.query("SELECT USER, DATE FROM url WHERE URI = %s;", [uri])
         for row in cursor.fetchall():
             if nick != row[0]:
                 d = row[1]
@@ -99,9 +97,9 @@ def _urlhandler(self, e, c):
                 """repeat the whole title, It has possibly been changed"""
                 c.privmsg(e.target(), "(%s)"%pagetitle)
                 return
-            
-        command = """INSERT INTO url (USER, URI, TITLE) VALUES (%s, %s, %s); """
-        cursor.execute(command, [nick, uri, pagetitle] )
+
+        qstr = "INSERT INTO url (USER, URI, TITLE) VALUES (%s, %s, %s); "
+        self.db.query(qstr, [nick, uri, pagetitle])
             
     if len(pagetitle) < 1:
         return

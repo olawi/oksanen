@@ -3,6 +3,7 @@
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
+from censor import censor
 
 import random
 
@@ -25,7 +26,7 @@ def orgiat(self, e, c):
 
     for chname, chobj in self.channels.items():
         if e.target().lower() == chname.lower():
-            users = chobj.users()
+            users = map(censor, chobj.users())
 
             if random.randint(0,1) == 0:
                 c.privmsg(e.target(), random.choice(threesome)%(random.choice(users),random.choice(users),random.choice(users)))

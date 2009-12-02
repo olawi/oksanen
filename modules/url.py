@@ -99,7 +99,8 @@ def _urlhandler(self, e, c):
                 return
 
         qstr = "INSERT INTO url (USER, URI, TITLE) VALUES (%s, %s, %s); "
-        self.db.query(qstr, [nick, uri, pagetitle])
+        cursor.execute(qstr, [nick, uri, pagetitle])
+        cursor.close()
             
     if len(pagetitle) < 1:
         return

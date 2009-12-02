@@ -75,19 +75,21 @@ class OhMySQLdb():
         try:
             c = self.conn.cursor()
             c.execute(sql, *args, **kwargs)
-            return c
         except (AttributeError, MySQLdb.OperationalError), ex:
             print >> sys.stderr, "\033[31mERROR\033[m (OhMySQLdb.query): %s"%ex
             print "SQL connection lost. Reconnecting..."
             self.connect()
-            c = self.conn.cursor()
             try:
+                c = self.conn.cursor()
                 c.execute(sql, *args, **kwargs)
             except (AttributeError, MySQLdb.OperationalError), ex:
                 print >> sys.stderr, "\033[31mERROR\033[m (OhMySQLdb.query): %s"%ex
-                print "Reconnection failed. No SQL connection."                
+                print "Reconnection failed. No SQL connection."
+                c.close()
+                return
             return c
-
+        return c
+                
     def close(self):
         self.conn.close()
                
@@ -98,21 +100,26 @@ class Oksanen(SingleServerIRCBot):
         self.nickname = nickname
         self.timer = TimerManager()
         self.cron = Chronograph()
-        self.setup()
-        print "\033[33mself.modules : \033[m",self.modules
-        print "\033[33mself.pubcommands : \033[m",self.pubcommands
-        print "\033[33mself.repubhandlers : \033[m",self.repubhandlers
-        print "\033[33mself.pubhandlers : \033[m",self.pubhandlers
-        print "\033[33mself.joinhandlers : \033[m",self.joinhandlers
-        print "\033[33mself.kickhandlers : \033[m",self.kickhandlers
-        print "\033[33mself.parthandlers : \033[m",self.parthandlers
-        print "\033[33mself.quithandlers : \033[m",self.quithandlers
 
         if hasSql:
             sql_login = dict(zip(['host', 'user', 'passwd', 'db'], sqlparams[:]))
             G_SQL_PARAMS.update(sql_login)
             self.db = OhMySQLdb()
             self.db.connect()
+
+        self.setup()
+        
+        print "\033[33mself.modules : \033[m",self.modules
+        print "\033[33mself.pubcommands : \033[m",self.pubcommands
+        print "\033[33mself.privcommands : \033[m",self.privcommands
+        print "\033[33mself.repubhandlers : \033[m",self.repubhandlers
+        print "\033[33mself.pubhandlers : \033[m",self.pubhandlers
+        print "\033[33mself.joinhandlers : \033[m",self.joinhandlers
+        print "\033[33mself.kickhandlers : \033[m",self.kickhandlers
+        print "\033[33mself.parthandlers : \033[m",self.parthandlers
+        print "\033[33mself.quithandlers : \033[m",self.quithandlers
+        print "\033[33mself.modehandlers : \033[m",self.modehandlers
+        print "\033[33mself.nickhandlers : \033[m",self.nickhandlers
 
         print "%s ready to roll! Joining %s in %s" % (self.nickname, self.channel, server)
 
@@ -170,6 +177,8 @@ class Oksanen(SingleServerIRCBot):
         self.parthandlers = []
         self.quithandlers = []
         self.kickhandlers = []
+        self.modehandlers = []
+        self.nickhandlers = []
         self.whoiscallbacks = []
 
         """call self.terminate on modules, if any"""
@@ -206,7 +215,7 @@ class Oksanen(SingleServerIRCBot):
                         self.modules.append(module)
                         modulenames.append(name)
                 except Exception, ex:
-                    print >> sys.stderr, "\033[31mError\033[m in setup" % name
+                    print >> sys.stderr, "\033[31mError\033[m in module %s setup:%s" % (name, ex)
 
         if modulenames: 
             print >> sys.stderr, '\033[33mRegistered modules:\033[m', ', '.join(modulenames)
@@ -257,7 +266,23 @@ class Oksanen(SingleServerIRCBot):
             except Exception, ex:
                 print "\033[31mERROR\033[m (on_kick): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
-                
+
+    def on_mode(self, c , e):
+        for func in self.modehandlers:
+            try:
+                func(self, e, c)
+            except Exception, ex:
+                print "\033[31mERROR\033[m (on_mode): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
+
+    def on_nick(self, c , e):
+        for func in self.nickhandlers:
+            try:
+                func(self, e, c)
+            except Exception, ex:
+                print "\033[31mERROR\033[m (on_nick): %s"%ex
+                if DEBUG > 1: traceback.print_stack()
+
     def on_quit(self, c , e):
         for func in self.quithandlers:
             try:
@@ -374,10 +399,11 @@ class Oksanen(SingleServerIRCBot):
             try:
                 func = self.privcommands[cmd]
                 ircutil.run_once(0, func, [self, e, c])
+                return
             except Exception, ex:
                 print "\033[31mERROR\033[m (do_command): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
-
+                
         """The rest is admin shit"""
         if not is_admin(e.source()):
             return
@@ -431,7 +457,7 @@ class Oksanen(SingleServerIRCBot):
                 e._target = e.source()
                 ircutil.run_once(0, func, [self, e, c])
             except Exception, ex:
-                print "\033[31mERROR\033[m (do_command): %s"%ex
+                print "\033[31mERROR\033[m (do_command [adm]): %s"%ex
                 if DEBUG > 1: traceback.print_stack()
 
         else:

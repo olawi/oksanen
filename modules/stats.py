@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from ircbot import SingleServerIRCBot
-from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 import string
-from oksanen import hasSql
-from time import strftime, localtime
+import re
 import datetime
+from time import strftime, localtime
+
+from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
+from irclib import parse_channel_modes, is_channel
+from ircbot import SingleServerIRCBot
+from oksanen import hasSql
 
 def seconds_to_string(seconds):
     elementcount = 0
@@ -61,6 +64,8 @@ def setup(self):
     self.joinhandlers.append(stats_join)
     self.parthandlers.append(stats_part)
     self.quithandlers.append(stats_part)
+    self.modehandlers.append(stats_mode)
+    self.kickhandlers.append(stats_kick)
     stats.nicks = []
     stats.channel = self.channel
 
@@ -109,6 +114,39 @@ def stats_part(self,e,c):
 
         cursor.close()        
 
+def stats_mode(self, e, c):
+    whosets = nm_to_n(e.source())
+    target = e.target()
+    modes = parse_channel_modes(" ".join(e.arguments()))
+    
+    for mode in modes:
+        modestr = "%s%s" % (mode[0], mode[1])
+        whogets = mode[2]
+        print "on_mode: %s: %s %s %s" %(whosets, target, modestr, whogets)
+        
+        if modestr == '+b':
+            cursor = self.db.cursor()
+            if stats.nicks == []:
+                load_nick_table(cursor)
+            if whosets in stats.nicks:
+                cursor.execute("UPDATE user SET banned = banned + 1 WHERE user = %s;",
+                               [whosets])
+        
+def stats_kick(self, e, c):
+    nick = e.arguments()[0]
+    channel = e.target()
+    whokicked = nm_to_n(e.source())
+
+    if hasSql:
+        cursor = self.db.cursor()
+        if stats.nicks == []:
+            load_nick_table(cursor)
+        if whokicked in stats.nicks:
+            cursor.execute("UPDATE user SET kicked = kicked + 1 WHERE user = %s;", [whokicked])
+        if nick in stats.nicks:
+            cursor.execute("UPDATE user SET waskicked = waskicked + 1 WHERE user = %s;", [nick])
+        cursor.close()
+    
 def stats(self, e, c):
     if hasSql:
 

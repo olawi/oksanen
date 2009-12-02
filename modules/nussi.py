@@ -4,6 +4,8 @@
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
+from censor import censor
+
 import random
 
 nusphrases = [ r"%s: %s olis vailla!", 
@@ -27,4 +29,5 @@ def nussi(self, e, c):
             if fuckee == nick:
                 c.privmsg(e.target(), "%s: fap fap fap fap fap fap FAP *GNUT*!"%nick)
             else:
+                fuckee = censor(fuckee)
                 c.privmsg(e.target(), nusphrases[random.randint(0, len(nusphrases)-1)]%(nick, fuckee))

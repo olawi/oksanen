@@ -11,6 +11,7 @@ from oksanen import hasSql
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 from ircutil import recode, run_once
+from censor import censor
 
 url_re = re.compile(r'(((https?|ftp):\/\/)|www\.)(([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)|([a-zA-Z0-9\-]+\.)*[a-zA-Z0-9\-]+\.(com|net|org|info|biz|gov|name|edu|[a-zA-Z][a-zA-Z]))(:[0-9]+)?((\/|\?)[^ "]*[^,;\.:">)])?')
 
@@ -91,7 +92,8 @@ def _urlhandler(self, e, c):
             if nick != row[0]:
                 d = row[1]
                 dstr = "%s.%s.%s %02d:%02d"%(d.day, d.month, d.year, d.hour, d.minute)
-                c.privmsg(e.target(), "W! - '%s' - (%s %s)"%(pagetitle, row[0], dstr))
+                wsayer = censor(row[0])
+                c.privmsg(e.target(), "W! - '%s' - (%s %s)"%(pagetitle, wsayer, dstr))
                 return 
             else:
                 """repeat the whole title, It has possibly been changed"""

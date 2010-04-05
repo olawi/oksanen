@@ -81,6 +81,7 @@ def add_question(self,e,c,type):
             musavisa.answer = line[0]
             musavisa.inquirer = nick
             c.privmsg(self.channel, "Musavisa: %s" %(line[1]))
+            c.privmsg(nick, "Kysymys nakattu kanavalle!")
         else:
             sqlquery = """INSERT INTO leffavisa (USER,QUESTION,ANSWER) VALUES (%s,%s,%s);"""
             cursor.execute(sqlquery, [nick,line[1],line[0]])
@@ -88,6 +89,7 @@ def add_question(self,e,c,type):
             leffavisa.answer = line[0]
             leffavisa.inquirer = nick
             c.privmsg(self.channel, "Leffavisa: %s" %(line[1]))
+            c.privmsg(nick, "Kysymys nakattu kanavalle!")
         cursor.close()
     else:
         print_usage(self,nick,c,type)

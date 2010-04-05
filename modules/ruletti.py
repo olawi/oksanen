@@ -55,6 +55,6 @@ def ruletti(self, e, c):
             sqlquery = """INSERT INTO gamescores (user,ruletti,ruletti_bang) VALUES (%s,1,1) ON DUPLICATE KEY UPDATE ruletti = ruletti + 1,ruletti_bang = ruletti_bang + 1;"""
         else:
             sqlquery = """INSERT INTO gamescores (user,ruletti) VALUES (%s,1) ON DUPLICATE KEY UPDATE ruletti = ruletti + 1;"""
-            cursor.execute(sqlquery, [nick] )
-            cursor.close()
+        cursor.execute(sqlquery, [nick] )
+        cursor.close()
     

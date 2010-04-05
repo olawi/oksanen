@@ -8,11 +8,17 @@ import random
 from wordgame_wordlist import wordgame_wordlist
 
 def setup(self):
-    self.cron.add_event({'minute':[00]}, sana, self)
-    #self.pubcommands['sana'] = sana
+    self.cron.add_event({'minute':[10]}, sana, self)
+    self.pubcommands['sana'] = kysysana
     self.pubhandlers.append(sanaChecker)
     sana.current_word = ""
     sana.current_word_shuffle = ""
+    
+def sana(self, e, c):
+    if len(sana.current_word) != 0:
+        c.privmsg(e.target(), "%s: Ratkaise tämä: %s"%(nick,sana.current_word_shuffle))
+    else:
+        c.privmsg(e.target(), "%s: Sanapeli ei ole nyt käynnissä. Malta hetki."%(nick))
     
 def sana(self):
     c = self.connection

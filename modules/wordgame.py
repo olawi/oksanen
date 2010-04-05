@@ -8,28 +8,30 @@ import random
 from wordgame_wordlist import wordgame_wordlist
 
 def setup(self):
+    self.cron.add_event({'minute':[00]}, sana, self)
     #self.pubcommands['sana'] = sana
-    #self.pubhandlers.append(sanaChecker)
+    self.pubhandlers.append(sanaChecker)
     sana.current_word = ""
     sana.current_word_shuffle = ""
     
-def sana(self, e, c):
-    nick = nm_to_n(e.source())
+def sana(self):
+    c = self.connection
+    channel = self.channel
     if len(sana.current_word) != 0:
-        c.privmsg(e.target(), "%s: ratkaise ensin tämä: %s"%(nick, sana.current_word_shuffle))
+        c.privmsg(channel, "Ratkaise tämä: %s"%(sana.current_word_shuffle))
         return
     else:
         sana.current_word = random.choice(wordgame_wordlist)
-        print "bgn !sana: %s"%sana.current_word
+        #print "bgn !sana: %s"%sana.current_word
         character_list = list(sana.current_word)
         random.shuffle(character_list)
         sana.current_word_shuffle = "".join(character_list)
-        c.privmsg(e.target(), "%s: sanapelin sana: %s"%(nick, sana.current_word_shuffle))
+        c.privmsg(channel, "Ratkaise tämä: %s"%(sana.current_word_shuffle))
 
 def sanaChecker(self, e, c):
-    line = e.arguments()[0]
     if len(sana.current_word) != 0:
+        line = e.arguments()[0]
         if line == sana.current_word:
             nick = nm_to_n(e.source())
-            c.privmsg(e.target(), "%s: Oikein meni! Onnittelut"%(nick))
+            c.privmsg(e.target(), "%s: Oikein meni!"%(nick))
             sana.current_word = ""

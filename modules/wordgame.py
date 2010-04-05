@@ -16,6 +16,7 @@ def setup(self):
     sana.current_word_shuffle = ""
     
 def kysysana(self, e, c):
+    nick = nm_to_n(e.source())
     if len(sana.current_word) != 0:
         c.privmsg(e.target(), "%s: Ratkaise tämä: %s"%(nick,sana.current_word_shuffle))
     else:

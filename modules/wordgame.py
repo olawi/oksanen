@@ -6,9 +6,10 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
 import random
 from wordgame_wordlist import wordgame_wordlist
+from oksanen import hasSql
 
 def setup(self):
-    self.cron.add_event({'minute':[10]}, sana, self)
+    self.cron.add_event({'minute':[25]}, sana, self)
     self.pubcommands['sana'] = kysysana
     self.pubhandlers.append(sanaChecker)
     sana.current_word = ""
@@ -41,3 +42,7 @@ def sanaChecker(self, e, c):
             nick = nm_to_n(e.source())
             c.privmsg(e.target(), "%s: Oikein meni!"%(nick))
             sana.current_word = ""
+            cursor = self.db.cursor()
+            sqlquery = """INSERT INTO gamescores (user,wordgame) VALUES (%s,1) ON DUPLICATE KEY UPDATE wordgame = wordgame + 1;"""
+            cursor.execute(sqlquery, [nick] )
+            cursor.close()

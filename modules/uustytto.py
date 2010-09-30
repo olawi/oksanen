@@ -54,8 +54,7 @@ def uustytto_callback(self,e,c):
             uustytto_lista.append(snick)
             print " - UUSTYTTÖ -"
             print uustytto_lista
-            # c.privmsg(e.target(), "UUSTYTTÖ <3")
+            c.privmsg(e.target(), snick+": UUSTYTTÖ <3")
         else:
             # wanhatyttö
             print " - WANHATYTTÖ -"
-            print uustytto_lista

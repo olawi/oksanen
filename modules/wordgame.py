@@ -9,12 +9,19 @@ from wordgame_wordlist import wordgame_wordlist
 from oksanen import hasSql
 
 def setup(self):
-    self.cron.add_event({'minute':[25]}, sana, self)
     self.pubcommands['sana'] = kysysana
     self.pubhandlers.append(sanaChecker)
     sana.current_word = ""
     sana.current_word_shuffle = ""
-    
+    sana.cron_id = self.cron.add_event({'count':1,'minute':[random.randint(0,59)]}, sana, self)
+
+def terminate(self):
+    """delete cron hook"""
+    try:
+        self.cron.delete_event(sana.cron_id)
+    except:
+        pass
+		
 def kysysana(self, e, c):
     nick = nm_to_n(e.source())
     if len(sana.current_word) != 0:
@@ -25,6 +32,7 @@ def kysysana(self, e, c):
 def sana(self):
     c = self.connection
     channel = self.channel
+    sana.cron_id = self.cron.add_event({'count':1,'minute':[random.randint(0,59)]}, sana, self)
     if len(sana.current_word) != 0:
         c.privmsg(channel, "Ratkaise tämä: %s"%(sana.current_word_shuffle))
         return

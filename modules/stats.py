@@ -10,6 +10,7 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 from irclib import parse_channel_modes, is_channel
 from ircbot import SingleServerIRCBot
 from oksanen import hasSql
+from censor import censor
 
 def seconds_to_string(seconds):
     elementcount = 0
@@ -68,6 +69,36 @@ def setup(self):
     self.kickhandlers.append(stats_kick)
     stats.nicks = []
     stats.channel = self.channel
+    self.pubcommands['stats'] = statshow
+    statshow.url = "http://rosvosektori.wipsl.com/numero/#stats"
+
+def statshow(self, e, c):
+    nick = nm_to_n(e.source())
+
+    line = e.arguments()[0]
+    target = string.join(line.split(" ")[1:], " ")
+    if (target and len(target) > 0):
+        if hasSql:
+            cursor = self.db.cursor()
+            if stats.nicks == []:
+                load_nick_table(cursor)
+
+            if target in stats.nicks:
+                command = """SELECT user, said, words, kicked, banned, waskicked, wasbanned, joins, parts, join_date, part_date, averagetime, firstseen FROM user WHERE `user`=%s;"""
+                cursor.execute(command, [ str(target) ] )
+                user, said, words, kicked, banned, waskicked, wasbanned, joins, parts, join_date, part_date, averagetime, firstseen = cursor.fetchone()
+
+                output = "Stats (%s) - Rivejä: %s, sanoja: %s, " %(censor(target),said,words)
+                output += "potkittu/potki: %s/%s, " %(waskicked,kicked)
+                output += "bännitty/bännäs: %s/%s, " %(wasbanned,banned)
+                output += "joins/parts: %s/%s, " %(joins,parts)
+                output += "keskimäärin kanavalla: %s, " %(seconds_to_string(averagetime))
+                output += "eka kerta: %s sitten." %(timediff(firstseen,datetime.datetime.now()))
+                c.privmsg(e.target(), output)
+            else:
+                c.privmsg(e.target(), "%s: Ei löyvy tommosta!"%(nick))
+    else:
+        c.privmsg(e.target(), "Ne on netissä: %s"%(statshow.url))
 
 def stats_join(self,e,c):
     if hasSql:

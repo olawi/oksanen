@@ -73,13 +73,13 @@ def get_tissit(self, url, cmd, thumbs=False):
     
     # return url to image
     if thumbs:
-        imlist = re.findall(r'<img [^>]*? src=\"(thumb\/[\d\w]+.jpg)"',data)
+        imlist = re.findall(r'<img [^>]*? src=\"[\w\:\/\.]*?(thumb\/[\d\w]+\.jpg)"',data)
     else:
-        imlist = re.findall(r'<a href=\"[\w\:\/\.]*?([src|kuvat]\/[\d\w]+.jpg)"',data)
+        imlist = re.findall(r'<a href=\"[\w\:\/\.]*?(src|kuvat)(\/[\d\w]+\.jpg)"',data)
     if imlist:
         if DEBUG > 1:
             print imlist
-        img = random.choice(imlist)
+        img = ''.join(random.choice(imlist))
     else:
         img = 'index.htm'
         

@@ -9,10 +9,16 @@ from censor import censor
 import random
 
 nusphrases = [ r"%s: %s olis vailla!", 
-               r"%s: paneskele vaikka %s:ta.",
+               r"%s: nussimiskaverisi olkoon %s.",
                r"%s: %s on kuulemma kova panemaan!",
                r"%s: %s on puutteessa.",
+               r"No mietippä nyt %s ihan itse että kenen kanssa tahtoisit? %s ei kyllä anna sulle.",
                r"%s: %s kaipais miurautusta!"]
+
+runkphrases = [ r"%s: fap fap fap fap fap fap FAP *GNUT*!",
+                r"Ei sinun kuule %s auta nyt kuin runkata, et löydä kaveria.",
+                r"Meni kuule sinulla runkkaus _hommiksi nyt!"
+                ]
 
 def setup(self):
     self.pubcommands['nussi'] = nussi
@@ -27,7 +33,7 @@ def nussi(self, e, c):
 
             fuckee = random.choice(users)
             if fuckee == nick:
-                c.privmsg(e.target(), "%s: fap fap fap fap fap fap FAP *GNUT*!"%nick)
+                c.privmsg(e.target(), random.choice(runkphrases) % nick)
             else:
                 fuckee = censor(fuckee)
-                c.privmsg(e.target(), nusphrases[random.randint(0, len(nusphrases)-1)]%(nick, fuckee))
+                c.privmsg(e.target(), random.choice(nusphrases) % (nick, fuckee))

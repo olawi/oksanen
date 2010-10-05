@@ -25,6 +25,8 @@ def terminate(self):
 def kysysana(self, e, c):
     nick = nm_to_n(e.source())
     if ((len(sana.current_word) > 0) or is_admin(e.source())):
+        if is_admin(e.source()):
+            self.cron.delete_event(sana.cron_id)
         sana(self)
     else:
         c.privmsg(e.target(), "%s: Sanapeli ei ole nyt käynnissä. Malta hetki."%(nick))

@@ -80,9 +80,11 @@ def _urlhandler(self, e, c):
             pagetitle = recode(p.output)
         except:
             print "url.py: parseri kosahti, jatketaan..."
-    elif fd.headers.getmaintype() == 'image':
+            pagetitle = ''
+# Commented this out, seems to cause crashes
+#    elif fd.headers.getmaintype() == 'image':
         # IF there were anything useful in the headers..
-        pagetitle = fd.headers.gettype()
+#        pagetitle = fd.headers.gettype()
     else:
         pagetitle = ''
             

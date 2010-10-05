@@ -90,4 +90,4 @@ def konni(self, e, c):
         data = konni.konniset[who]
         c.privmsg(e.target(),"%02d:%02d <%s> %s"%(data[0].hour,data[0].minute,who,data[1]))   
     else:
-        c.privmsg(e.target(),"eipä ole %s:ta kuulunut viime aikoina"%who)
+        c.privmsg(e.target(),"enpä hoksaa mitä %s puuhailee."%who)

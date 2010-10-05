@@ -7,6 +7,8 @@ import re
 import random
 from irclib import nm_to_n
 
+DEBUG = 1
+
 tissit_url = 'http://%s.kiinnostaa.org/'
 tissit_cmdlist = ['tissit', 'pillu', 'perse', 'pano', 'lesbot', 'suihinotto']
 
@@ -26,7 +28,9 @@ def get_tissit_index(self, url, cmd):
     fd = urllib2.urlopen(url%cmd+'index.htm')
     data = fd.read()
     fd.close()
-    subpages = re.findall(r'<a href=\"(\d+.htm)"',data)    
+    subpages = re.findall(r'<a href=\"(\d+.htm)"',data)
+    if DEBUG > 1:
+        print subpages
     return subpages
     
 def get_tissit(self, url, cmd, thumbs=False):
@@ -40,11 +44,15 @@ def get_tissit(self, url, cmd, thumbs=False):
         try:
             tissit.urls[cmd] = get_tissit_index(self, url, cmd)
             page = random.choice(tissit.urls[cmd])
+            if DEBUG > 0: 
+                print page
         except Exception, ex:
             print "\033[31mERROR\033[m (tissit): %s"%ex
             return "sori, ei tänään."
 
     try:
+        if DEBUG > 0:
+            print url%cmd + page
         fd = urllib2.urlopen(url%cmd + page)
     except:
         """links outdated?"""
@@ -67,8 +75,10 @@ def get_tissit(self, url, cmd, thumbs=False):
     if thumbs:
         imlist = re.findall(r'<img [^>]*? src=\"(thumb\/[\d\w]+.jpg)"',data)
     else:
-        imlist = re.findall(r'<a href=\"(src\/[\d\w]+.jpg)"',data)
+        imlist = re.findall(r'<a href=\"[\w\:\/\.]*?([src|kuvat]\/[\d\w]+.jpg)"',data)
     if imlist:
+        if DEBUG > 1:
+            print imlist
         img = random.choice(imlist)
     else:
         img = 'index.htm'

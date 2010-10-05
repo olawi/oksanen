@@ -6,7 +6,7 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
 
 import random
 from wordgame_wordlist import wordgame_wordlist
-from oksanen import hasSql
+from oksanen import hasSql, is_admin
 
 def setup(self):
     self.pubcommands['sana'] = kysysana
@@ -24,8 +24,8 @@ def terminate(self):
 		
 def kysysana(self, e, c):
     nick = nm_to_n(e.source())
-    if len(sana.current_word) != 0:
-        c.privmsg(e.target(), "%s: Ratkaise tämä: %s"%(nick,sana.current_word_shuffle))
+    if ((len(sana.current_word) > 0) or is_admin(e.source())):
+        sana(self)
     else:
         c.privmsg(e.target(), "%s: Sanapeli ei ole nyt käynnissä. Malta hetki."%(nick))
     
@@ -33,25 +33,27 @@ def sana(self):
     c = self.connection
     channel = self.channel
     sana.cron_id = self.cron.add_event({'count':1,'minute':[random.randint(0,59)]}, sana, self)
-    if len(sana.current_word) != 0:
-        c.privmsg(channel, "Ratkaise tämä: %s"%(sana.current_word_shuffle))
-        return
-    else:
+    if len(sana.current_word) < 1:
         sana.current_word = random.choice(wordgame_wordlist)
-        #print "bgn !sana: %s"%sana.current_word
-        character_list = list(sana.current_word)
-        random.shuffle(character_list)
-        sana.current_word_shuffle = "".join(character_list)
-        c.privmsg(channel, "Ratkaise tämä: %s"%(sana.current_word_shuffle))
+    character_list = list(sana.current_word)
+    random.shuffle(character_list)
+    sana.current_word_shuffle = "".join(character_list)
+    c.privmsg(channel, "Ratkaise tämä: %s"%(sana.current_word_shuffle))
+    print "in module sana sending: %s / %s " % (sana.current_word_shuffle, sana.current_word)
 
 def sanaChecker(self, e, c):
     if len(sana.current_word) != 0:
         line = e.arguments()[0]
         if line == sana.current_word:
             nick = nm_to_n(e.source())
-            c.privmsg(e.target(), "%s: Oikein meni!"%(nick))
             sana.current_word = ""
             cursor = self.db.cursor()
             sqlquery = """INSERT INTO gamescores (user,wordgame) VALUES (%s,1) ON DUPLICATE KEY UPDATE wordgame = wordgame + 1;"""
             cursor.execute(sqlquery, [nick] )
+            cursor.close()
+            cursor = self.db.cursor()
+            sqlquery = """SELECT wordgame FROM gamescores WHERE `user`=%s;"""
+            cursor.execute(sqlquery, [nick] )
+            [score] = cursor.fetchone()
+            c.privmsg(e.target(), "%s, oikein meni! Sinulla on nyt %s pistettä." % (nick, score))
             cursor.close()

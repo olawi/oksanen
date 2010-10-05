@@ -76,7 +76,7 @@ def statshow(self, e, c):
     nick = nm_to_n(e.source())
 
     line = e.arguments()[0]
-    target = string.join(line.split(" ")[1:], " ")
+    target = string.join(line.split()[1:], " ")
     if (target and len(target) > 0):
         if hasSql:
             cursor = self.db.cursor()
@@ -88,7 +88,7 @@ def statshow(self, e, c):
                 cursor.execute(command, [ str(target) ] )
                 user, said, words, kicked, banned, waskicked, wasbanned, joins, parts, join_date, part_date, averagetime, firstseen = cursor.fetchone()
 
-                output = "Stats (%s) - Rivejä: %s, sanoja: %s, " %(censor(target),said,words)
+                output = "Stats (%s) - Rivejä: %s, sanoja: %s, " %(target,said,words)
                 output += "potkittu/potki: %s/%s, " %(waskicked,kicked)
                 output += "bännitty/bännäs: %s/%s, " %(wasbanned,banned)
                 output += "joins/parts: %s/%s, " %(joins,parts)

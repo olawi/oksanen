@@ -9,12 +9,17 @@ import random
 from haddock import kiroukset
 
 babble = [ r"%s, ei tänään, ei ehkä koskaan",
-           r"%s: Vielä on 6 viikkoa porttikieltoa jäljellä",
-           r"%s: Kerroppa omin sanoin miksi olet siinä etkä tuolla jonon perällä?",
+           r"%s, vielä on 6 viikkoa porttikieltoa jäljellä",
+           r"%s, Kerroppa omin sanoin miksi olet siinä etkä tuolla jonon perällä?",
            r"%s, hehe mikä variksenpelätin se sinäki olet",
-           r"%s: Narikkamaksu on pakollinen",
-           r"%s: Ei omia juomia. Ulos.",
-           r"%s: Siellä sisällä on vain jotain saatanan lökäpöksyjä tänään. Ei kannata tulla." ]
+           r"%s, Narikkamaksu on pakollinen",
+           r"%s, Ei omia juomia. Ulos.",
+           r"%s, Siellä sisällä on vain jotain saatanan lökäpöksyjä tänään. Ei kannata tulla.",
+           r"%s, mitä sää oikein höpötät?",
+           r"%s, ffffFFFYSSSTTPPFFFT",
+           r"%s, etköhän sinä ole jo ottanut tarpeeksi.",
+           r"%s, jätkä näyttää siltä että olet kuunnellut liikaa Popedaa.",
+           r"%s, oletkohan sinäkin tyttö vai poika? Ei teistä hipeistä ota pirukaan selvää."]
 
 def setup(self):
     s = r"\b%s" % self.nickname

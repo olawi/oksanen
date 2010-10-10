@@ -54,8 +54,9 @@ def sanaChecker(self, e, c):
             cursor.execute(sqlquery, [nick] )
             cursor.close()
             cursor = self.db.cursor()
-            sqlquery = """SELECT wordgame FROM gamescores WHERE `user`=%s;"""
+			sqlquery = """SET @rownum := 0;SELECT wordgame,rank FROM (SELECT @rownum := @rownum+1 AS rank, wordgame, user FROM gamescores ORDER BY wordgame DESC) AS derived_table WHERE user='%s';"""
+            #sqlquery = """SELECT wordgame FROM gamescores WHERE `user`=%s;"""
             cursor.execute(sqlquery, [nick] )
-            [score] = cursor.fetchone()
-            c.privmsg(e.target(), "%s, oikein meni! Sinulla on nyt %s pistettä." % (nick, score))
+            score, rank = cursor.fetchone()
+            c.privmsg(e.target(), "%s, oikein meni! Sinulla on nyt %s pistettä. Sijalla %s" % (nick, score, rank))
             cursor.close()

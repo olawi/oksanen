@@ -46,18 +46,32 @@ def check_question(self,e,c):
             cursor = self.db.cursor()
             sqlquery = """INSERT INTO gamescores (user,leffavisa) VALUES (%s,1) ON DUPLICATE KEY UPDATE leffavisa = leffavisa + 1;"""
             cursor.execute(sqlquery, [nick] )
-            c.privmsg(e.target(), "%s, jee, oikein meni!" %(nick))
-            leffavisa.question = ""
             cursor.close()
+            cursor = self.db.cursor()
+            cursor.execute("SET @rownum := 0;")
+            sqlquery = """SELECT leffavisa,rank FROM (SELECT @rownum := @rownum+1 AS rank, leffavisa, user FROM gamescores ORDER BY leffavisa DESC) AS derived_table WHERE user=%s;"""
+            cursor.execute(sqlquery, [nick])
+            row = cursor.fetchone()
+            print sqlquery
+            print row[0],row[1]
+            c.privmsg(e.target(), "%s, oikein meni! Sinulla on nyt %s pistettä. Leffavisassa sijalla %s" % (nick, row[0], row[1]))
+            cursor.close()
+            leffavisa.question = ""
             return
     if (musavisa.question != "" and musavisa.inquirer != nick):
         if (e.arguments()[0].lower() == musavisa.answer.lower()):
             cursor = self.db.cursor()
             sqlquery = """INSERT INTO gamescores (user,musavisa) VALUES (%s,1) ON DUPLICATE KEY UPDATE musavisa = musavisa + 1;"""
             cursor.execute(sqlquery, [nick] )
-            c.privmsg(e.target(), "%s, jee, oikein meni!" %(nick))
-            musavisa.question = ""
             cursor.close()
+            cursor = self.db.cursor()
+            cursor.execute("SET @rownum := 0;")
+            sqlquery = """SELECT musavisa,rank FROM (SELECT @rownum := @rownum+1 AS rank, musavisa, user FROM gamescores ORDER BY musavisa DESC) AS derived_table WHERE user=%s;"""
+            cursor.execute(sqlquery, [nick])
+            row = cursor.fetchone()
+            c.privmsg(e.target(), "%s, oikein meni! Sinulla on nyt %s pistettä. Musavisassa sijalla %s" % (nick, row[0], row[1]))
+            cursor.close()
+            musavisa.question = ""
             return
           
 def add_question(self,e,c,type):

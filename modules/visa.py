@@ -5,6 +5,7 @@ from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_u
 import string
 import ircutil
+import random
 
 from oksanen import hasSql
 
@@ -20,7 +21,29 @@ def setup(self):
     musavisa.question = ""
     musavisa.answer = ""
     musavisa.inquirer = ""
+    musavisa.cron_id = self.cron.add_event({'count':1,'minute':[random.randint(0,59)]}, ask_question, self)
 
+def ask_question(self):
+    c = self.connection
+    channel = self.channel
+    musavisa.cron_id = self.cron.add_event({'count':1,'minute':[random.randint(0,59)]}, ask_question, self)
+    cursor = self.db.cursor()
+    sqlquery = """SELECT * FROM musavisa ORDER BY RAND() LIMIT 1;"""
+    cursor.execute(sqlquery, [] )
+    id, user, question, answer, date = cursor.fetchone()
+    musavisa.question = question
+    musavisa.answer = answer
+    musavisa.inquirer = user
+    c.privmsg(channel, "Musavisa: %s (kysyi: %s)" %(question,user))
+    cursor.close()
+
+def terminate(self):
+    """delete cron hook"""
+    try:
+        self.cron.delete_event(musavisa.cron_id)
+    except:
+        pass
+	
 def musavisa(self,e,c):
     add_question(self,e,c,0)
 
@@ -107,7 +130,7 @@ def add_question(self,e,c,type):
         cursor.close()
     else:
         print_usage(self,nick,c,type)
-    
+
 def print_usage(self,nick,c,type):
     if type == 0:
         c.privmsg(nick, "!musavisa vastaus|kysymys")

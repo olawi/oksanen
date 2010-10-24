@@ -40,7 +40,8 @@ def sana(self):
     character_list = list(sana.current_word)
     random.shuffle(character_list)
     sana.current_word_shuffle = "".join(character_list)
-    c.privmsg(channel, "Ratkaise tämä: %s"%(sana.current_word_shuffle))
+    output = "Ratkaise sana: %s"%(sana.current_word_shuffle)
+    c.privmsg(channel, output)
     print "in module sana sending: %s / %s " % (sana.current_word_shuffle, sana.current_word)
 
 def sanaChecker(self, e, c):

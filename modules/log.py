@@ -55,8 +55,10 @@ def log(self, e, c):
 
             cursor.execute(command, [ str(logentry) ] )
             for row in cursor.fetchall():
-                s = "%s (Loggasi %s, p %s)"%(row[1], row[0], row[2])
+                s = u"%s (Loggasi %s, pisteitä %s)"%(row[1], row[0], row[2])
                 c.privmsg(e.target(), s)
+                command = """UPDATE log SET score = %s WHERE `ID`=%s"""
+                cursor.execute(command, [str(int(row[2])+1), str(logentry)])
     else:
         c.privmsg(e.target(), "Interwebsissähän ne. "+log.url)
 

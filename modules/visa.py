@@ -26,7 +26,7 @@ def setup(self):
 def ask_question(self):
     c = self.connection
     channel = self.channel
-    musavisa.cron_id = self.cron.add_event({'count':1,'minute':[random.randint(0,59)]}, ask_question, self)
+    musavisa.cron_id = self.cron.add_event({'count':1,'hour':[random.randint(0,23)],'minute':[random.randint(0,59)]}, ask_question, self)
     cursor = self.db.cursor()
     sqlquery = """SELECT * FROM musavisa ORDER BY RAND() LIMIT 1;"""
     cursor.execute(sqlquery, [] )

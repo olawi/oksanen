@@ -41,13 +41,13 @@ def sana(self):
     random.shuffle(character_list)
     sana.current_word_shuffle = "".join(character_list)
     output = "Ratkaise sana: %s"%(sana.current_word_shuffle)
-    c.privmsg(channel, output)
+    c.privmsg(channel, output.encode('ISO-8859-1'))
     print "in module sana sending: %s / %s " % (sana.current_word_shuffle, sana.current_word)
 
 def sanaChecker(self, e, c):
     if len(sana.current_word) != 0:
         line = e.arguments()[0]
-        if line == sana.current_word:
+        if line == sana.current_word.encode('utf-8'):
             nick = nm_to_n(e.source())
             sana.current_word = ""
             cursor = self.db.cursor()

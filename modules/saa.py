@@ -90,23 +90,21 @@ class fmi_parser(HTMLParser.HTMLParser):
             self.buf += ' '
         
     def handle_starttag(self,tag,attrs):
-        if tag == 'p':
+        if tag == 'table':
             for a in attrs:
                 if a == ("class","observation-text"):
                     self.buf = ''
                     self.state = 1
-        if tag == 'strong' and self.state == 1:
-            self.buf += ' '
-        #if tag == 'option': # fmi_locations printout
-            # print "'%s',"%attrs[0][1]            
+        if tag == 'span':
+            for a in attrs:
+                if a == ("class","parameter-name-value"):
+                    self.buf += ' '
 
     def handle_endtag(self,tag):
-        if tag == "p":
+        if tag == "table":
             if self.state == 1:
                 self.content = self.buf
                 self.state = 0
-        if tag == 'strong' and self.state == 1:
-            self.buf += ' ' 
 
 def get_fmi(self,location):
     
@@ -223,8 +221,8 @@ def saa(self,e,c):
                     output += "; %s %s %s"%(k,v[0],unicode(v[1],'ascii','ignore'))
     else:
         if len(raw_output) > 0:
-            c.privmsg(e.target(),"fmi.fi palauttaa kummallista dataa. Tässä mitä sain irti:")
-            output = raw_output
+            # c.privmsg(e.target(),"fmi.fi palauttaa kummallista dataa. Tässä mitä sain irti:")
+            output = buf
         else:
             c.privmsg(e.target(),"en saa yhteyttä ilmatieteen laitokseen. Yritä !sää willab")
             return

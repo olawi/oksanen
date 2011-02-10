@@ -17,7 +17,7 @@ from ircbot import SingleServerIRCBot
 from irclib import nm_to_n
 import ircutil
 
-DEBUG = 2
+DEBUG = 1
 
 willab_url = "http://weather.willab.fi/weather.html"
 fmi_url = "http://www.fmi.fi/saa/paikalli.html?place="
@@ -56,57 +56,33 @@ class willab_parser(htmllib.HTMLParser):
         s = self.save_end()
         self.weatherdata[self.last_key] = "%s"%s
 
-class fmi_parser(HTMLParser.HTMLParser):
-    
+class fmi_parser2(htmllib.HTMLParser):
+
     def __init__(self, verbose=0):
-        self.state = 0
-        self.content = ''
-        self.buf = ''
-        HTMLParser.HTMLParser.__init__(self)
+        self.state = 0 
+        self.wdata = []
+        self.current = ['','']
+        f = formatter.NullFormatter()
+        htmllib.HTMLParser.__init__(self, f, verbose)
 
-    def handle_data(self,data):
-        if self.state == 1:
-            self.buf += r"%s"%data
-
-    def handle_entityref(self, name):
-        if self.state == 1:
-            if name == 'auml':
-                self.buf += 'ä'
-            if name == 'ouml':
-                self.buf += 'ö'
-            if name == 'aring':
-                self.buf += 'å'
-            if name == 'Auml':
-                self.buf += 'Ä'
-            if name == 'Ouml':
-                self.buf += 'Ö'
-            if name == 'Aring':
-                self.buf += 'Å' 
-            if name == 'deg':
-                self.buf += '°'
-            if name == 'nbsp':
-                self.buf += ' '
-               
-    def handle_startendtag(self,tag,attrs):
-        if tag == 'br' and self.state == 1:
-            self.buf += ' '
-        
-    def handle_starttag(self,tag,attrs):
-        if tag == 'table':
-            for a in attrs:
-                if a == ("class","observation-text"):
-                    self.buf = ''
-                    self.state = 1
-        if tag == 'span':
-            for a in attrs:
-                if a == ("class","parameter-name-value"):
-                    self.buf += ' '
-
-    def handle_endtag(self,tag):
-        if tag == "table":
-            if self.state == 1:
-                self.content = self.buf
+    def start_span(self,attrs):
+         for a in attrs:
+            if a == ('class', 'parameter-name'):
+                self.state = 1
+                self.save_bgn()
+            elif a == ('class', 'parameter-value'):
+                self.state = 2
+                self.save_bgn()
+            else:
                 self.state = 0
+
+    def end_span(self):
+        if self.state == 1: 
+            self.current[0] = ircutil.recode(self.save_end())
+        elif self.state == 2:
+            self.current[1] = ircutil.recode(self.save_end())
+            self.wdata.append(self.current[:])
+        self.state = 0
 
 class tieh_parser(htmllib.HTMLParser):
     
@@ -138,7 +114,7 @@ class tieh_parser(htmllib.HTMLParser):
                 if not self.current_location in self.wdata.keys():
                     self.wdata[self.current_location] = []
                 if not self.skip_data:
-                    self.wdata[self.current_location].append(s)
+                    self.wdata[self.current_location].append(ircutil.recode(s))
                 
         self.state = 1
         self.sflag = 0
@@ -150,10 +126,12 @@ def get_fmi(self,location):
     page = fd.read()
     fd.close
     
-    p = fmi_parser()
+    p = fmi_parser2()
     p.feed(page)
+
+    print p.wdata
     
-    return p.content
+    return p.wdata
 
 def get_willab(self):
 
@@ -228,8 +206,11 @@ def saa(self,e,c):
         return
 
     if location == 'fmi':
-        if len(line.split()[1:]) < 1:
+        if len(line.split()[1:]) < 3:
+            showall = False
+        if len(line.split()[1:]) < 2:
             location = 'Oulu'
+            showall = True
         else:
             location = string.lower("%s"%line.split()[2])
 
@@ -239,19 +220,50 @@ def saa(self,e,c):
         location = re.sub('Ö','o',location)
         location = string.capitalize(location)
 
-        raw_output = get_fmi(self,location)
+        fmi_data = get_fmi(self,location)
 
-        buf = ircutil.recode(string.join(raw_output.split(),' '))
-        print buf
-
-        if len(raw_output) > 0:
-            output = buf
+        if fmi_data:
+            output = fmi_data[0][1]
+            if showall:
+                for x in fmi_data[1:]:
+                    output += ", %s %s"%(x[0],x[1])
+            else:
+                for x in fmi_data:
+                    m = re.search('Tyyntä|tuulta',x[0])
+                    if m:
+                        output += ", %s %s"%(x[0],x[1])
         else:
-            c.privmsg(e.target(),"Sori, paikkaa %s ei löydy."%location)
-            return
-        
-        c.privmsg(e.target(),"%s: %s "%(location,output))
+            output = "sori, paikkaa ei löydy."
+
+        c.privmsg(e.target(),"%s (fmi.fi): %s "%(location,output))
         saa.timelast = saa.timenow
+        return
+
+    if location == 'minmax':
+        '''Get all temperatures from tiehallinto...'''
+        all_urls = get_tieh_urls(self)
+        all_wdata = {}
+        for urli in all_urls:
+            w_data = get_tieh(self,urli)
+            all_wdata.update(w_data)
+            
+        w_min = ['Helvetti', 666.0]
+        w_max = ['Ryssän helvetti', -666.0]
+
+        for s in all_wdata.keys():
+            try:
+                if float(all_wdata[s][1]) < float(w_min[1]):
+                    w_min[0] = s
+                    w_min[1] = all_wdata[s][1]
+                if float(all_wdata[s][1]) > float(w_max[1]):
+                    w_max[0] = s
+                    w_max[1] = all_wdata[s][1]
+            except:
+                continue
+
+        output = "min: %s, %s °C; "%(w_min[0],w_min[1])
+        output += "max: %s, %s °C"%(w_max[0],w_max[1])
+        c.privmsg(e.target(),output)
         return
 
     '''defaults to tiehallinto'''
@@ -283,6 +295,8 @@ def saa(self,e,c):
 
     if not sub_url:
         '''try fmi and give up'''
+        if showall:
+            location = location + ' foo'
         e._arguments = ["%s %s %s"%(line.split()[0],'fmi',location)]
         saa(self,e,c)
         return
@@ -293,14 +307,18 @@ def saa(self,e,c):
 
     print w_data
     output = "%s: "%location_key
-    output += "%s°C, "%w_data[1]
-    output += "%sa"%w_data[3]
-    if w_data[3] != 'Pouta':
-        output += " sadetta"
+    output += "%s °C"%w_data[1]
+    if w_data[3]:
+        output += ", %sa"%w_data[3]
+        if w_data[3] != 'Pouta':
+            output += " sadetta"
+ 
+    if showall:
+        output += ", tie: %s °C"%w_data[2]
+        output += ", keli %s"%w_data[4]
+        output += ", mitattu klo %s"%w_data[0]
 
     c.privmsg(e.target(),output)
-
-    '''Somethn fkucked up if this does not match'''
 
     saa.timelast = saa.timenow
     

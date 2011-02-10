@@ -205,37 +205,26 @@ def saa(self,e,c):
         saa.timelast = saa.timenow
         return
 
-    if location == 'fmi':
-        if len(line.split()[1:]) < 3:
-            showall = False
-        if len(line.split()[1:]) < 2:
-            location = 'Oulu'
-            showall = True
+    flocation = re.sub('ä','a',location)
+    flocation = re.sub('ö','o',location)
+    flocation = re.sub('Ä','a',location)
+    flocation = re.sub('Ö','o',location)
+    flocation = string.capitalize(location)
+
+    fmi_data = get_fmi(self,flocation)
+    
+    if fmi_data:
+        output = fmi_data[0][1]
+        if showall:
+            for x in fmi_data[1:]:
+                output += ", %s %s"%(x[0],x[1])
         else:
-            location = string.lower("%s"%line.split()[2])
-
-        location = re.sub('ä','a',location)
-        location = re.sub('ö','o',location)
-        location = re.sub('Ä','a',location)
-        location = re.sub('Ö','o',location)
-        location = string.capitalize(location)
-
-        fmi_data = get_fmi(self,location)
-
-        if fmi_data:
-            output = fmi_data[0][1]
-            if showall:
-                for x in fmi_data[1:]:
+            for x in fmi_data:
+                m = re.search('Tyyntä|tuulta',x[0])
+                if m:
                     output += ", %s %s"%(x[0],x[1])
-            else:
-                for x in fmi_data:
-                    m = re.search('Tyyntä|tuulta',x[0])
-                    if m:
-                        output += ", %s %s"%(x[0],x[1])
-        else:
-            output = "sori, paikkaa ei löydy."
 
-        c.privmsg(e.target(),"%s (fmi.fi): %s "%(location,output))
+        c.privmsg(e.target(),"%s: %s "%(flocation,output))
         saa.timelast = saa.timenow
         return
 
@@ -261,9 +250,10 @@ def saa(self,e,c):
             except:
                 continue
 
-        output = "min: %s, %s °C; "%(w_min[0],w_min[1])
-        output += "max: %s, %s °C"%(w_max[0],w_max[1])
+        output = "min - %s: %s °C; "%(w_min[0],w_min[1])
+        output += "max - %s: %s °C"%(w_max[0],w_max[1])
         c.privmsg(e.target(),output)
+        saa.timelast = saa.timenow
         return
 
     '''defaults to tiehallinto'''
@@ -294,11 +284,8 @@ def saa(self,e,c):
                 break
 
     if not sub_url:
-        '''try fmi and give up'''
-        if showall:
-            location = location + ' foo'
-        e._arguments = ["%s %s %s"%(line.split()[0],'fmi',location)]
-        saa(self,e,c)
+        c.privmsg(e.target(),"Sori, ei löydy sen nimistä paikkaa.")
+        saa.timelast = saa.timenow
         return
 
     '''Get the weather data from corresponding page'''

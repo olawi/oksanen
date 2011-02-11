@@ -7,7 +7,7 @@ import string
 import ircutil
 import random
 
-from oksanen import hasSql
+from oksanen import hasSql, is_admin
 
 def setup(self):
     self.pubhandlers.append(check_question)
@@ -15,32 +15,42 @@ def setup(self):
     self.privcommands['leffavisa'] = leffavisa
     self.pubcommands['musavisa'] = musavisa_print
     self.pubcommands['leffavisa'] = leffavisa_print
+    self.privcommands['visa'] = visa
     leffavisa.question = ""
     leffavisa.answer = ""
     leffavisa.inquirer = ""
     musavisa.question = ""
     musavisa.answer = ""
     musavisa.inquirer = ""
-    musavisa.cron_id = self.cron.add_event({'count':1,'minute':[random.randint(0,59)]}, ask_question, self)
+    visa.cron_id = {}
 
-def ask_question(self):
+    visa.cron_id['musavisa'] = self.cron.add_event({'count':1,'minute':[random.randint(0,59)]}, ask_question, self, 'musavisa')
+    visa.cron_id['leffavisa'] = self.cron.add_event({'count':1,'minute':[random.randint(0,59)]}, ask_question, self, 'leffavisa')
+
+def ask_question(self, qtype='musavisa'):
     c = self.connection
     channel = self.channel
-    musavisa.cron_id = self.cron.add_event({'count':1,'hour':[random.randint(0,23)],'minute':[random.randint(0,59)]}, ask_question, self)
+    visa.cron_id[qtype] = self.cron.add_event({'count':1,'hour':[random.randint(0,23)],'minute':[random.randint(0,59)]}, ask_question, self, qtype)
     cursor = self.db.cursor()
-    sqlquery = """SELECT * FROM musavisa ORDER BY RAND() LIMIT 1;"""
+    sqlquery = "SELECT * FROM %s ORDER BY RAND() LIMIT 1;"%qtype
     cursor.execute(sqlquery, [] )
     id, user, question, answer, date = cursor.fetchone()
-    musavisa.question = question
-    musavisa.answer = answer
-    musavisa.inquirer = user
-    c.privmsg(channel, "Musavisa: %s (kysyi: %s)" %(question,user))
+    if qtype == 'musavisa':
+        musavisa.question = question
+        musavisa.answer = answer
+        musavisa.inquirer = user
+    else:
+        leffavisa.question = question
+        leffavisa.answer = answer
+        leffavisa.inquirer = user
+    c.privmsg(channel, "%s: %s (kysyi: %s)" %(qtype.capitalize(),question,user))
     cursor.close()
 
 def terminate(self):
     """delete cron hook"""
     try:
-        self.cron.delete_event(musavisa.cron_id)
+        for k in visa.cron_id.keys():
+            self.cron.delete_event(visa.cron_id[k])
     except:
         pass
 	
@@ -65,7 +75,8 @@ def leffavisa_print(self,e,c):
 def check_question(self,e,c):
     nick = nm_to_n(e.source())
     if (leffavisa.question != "" and leffavisa.inquirer != nick):
-        if (e.arguments()[0].lower() == leffavisa.answer.lower()):
+        ans = ircutil.recode(e.arguments()[0].lower())
+        if (ans == ircutil.recode(leffavisa.answer.lower())):
             cursor = self.db.cursor()
             sqlquery = """INSERT INTO gamescores (user,leffavisa) VALUES (%s,1) ON DUPLICATE KEY UPDATE leffavisa = leffavisa + 1;"""
             cursor.execute(sqlquery, [nick] )
@@ -82,7 +93,8 @@ def check_question(self,e,c):
             leffavisa.question = ""
             return
     if (musavisa.question != "" and musavisa.inquirer != nick):
-        if (e.arguments()[0].lower() == musavisa.answer.lower()):
+        ans = ircutil.recode(e.arguments()[0].lower())
+        if (ans == ircutil.recode(musavisa.answer.lower())):
             cursor = self.db.cursor()
             sqlquery = """INSERT INTO gamescores (user,musavisa) VALUES (%s,1) ON DUPLICATE KEY UPDATE musavisa = musavisa + 1;"""
             cursor.execute(sqlquery, [nick] )
@@ -131,6 +143,47 @@ def add_question(self,e,c,type):
     else:
         print_usage(self,nick,c,type)
 
+def visa(self,e,c):
+    '''admin-like, force question'''
+    if not is_admin(e.source()):
+        return
+
+    line = e.arguments()[0]
+    if len(line.split()[1:]) < 2:
+        c.privmsg(e.source(),"Usage: visa [musavisa|leffavisa] id")
+        return
+
+    qtype = string.lower("%s"%line.split()[1])
+    qid   = "%s"%line.split()[2]
+
+    cursor = self.db.cursor()
+    if qtype == 'musavisa':
+        query = """SELECT * FROM musavisa WHERE id = %s;"""
+    else:
+        query = """SELECT * FROM leffavisa WHERE id = %s;"""
+
+    try:
+        cursor.execute(query, [int(qid)])
+    except:
+        cursor.close()
+        c.privmsg(e.source(),"No can do, sir, SQL fail.")
+        return
+
+    qid, user, question, answer, date = cursor.fetchone()
+    cursor.close()
+
+    if qtype == 'musavisa':
+        musavisa.question = question
+        musavisa.answer = answer
+        musavisa.inquirer = user
+    else:
+        leffavisa.question = question
+        leffavisa.answer = answer
+        leffavisa.inquirer = user
+
+    channel = self.channel
+    c.privmsg(channel, "%s: %s (kysyi: %s)" %(qtype.capitalize(),question,user))
+    
 def print_usage(self,nick,c,type):
     if type == 0:
         c.privmsg(nick, "!musavisa vastaus|kysymys")

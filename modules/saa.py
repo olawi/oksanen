@@ -234,6 +234,9 @@ def saa(self,e,c):
         all_wdata = {}
         for urli in all_urls:
             w_data = get_tieh(self,urli)
+            '''Update locations for this page'''
+            for k in w_data.keys():
+                saa.tieh_locations[k] = urli
             all_wdata.update(w_data)
             
         w_min = ['Helvetti', 666.0]
@@ -290,6 +293,10 @@ def saa(self,e,c):
 
     '''Get the weather data from corresponding page'''
     wall_data = get_tieh(self,sub_url)
+    '''Update locations for this page'''
+    for k in wall_data.keys():
+        saa.tieh_locations[k] = sub_url
+
     w_data =  wall_data[location_key]
 
     print w_data

@@ -302,7 +302,8 @@ def saa(self,e,c):
     print w_data
     output = "%s: "%location_key
     output += "%s °C"%w_data[1]
-    if w_data[3]:
+    re.sub(r'\s','',w_data[3])
+    if len(w_data[3]) > 1:
         output += ", %sa"%w_data[3]
         if w_data[3] != 'Pouta':
             output += " sadetta"

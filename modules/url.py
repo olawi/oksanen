@@ -15,6 +15,8 @@ from censor import censor
 
 url_re = re.compile(r'(((https?|ftp):\/\/)|www\.)(([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)|([a-zA-Z0-9\-]+\.)*[a-zA-Z0-9\-]+\.(com|net|org|info|biz|gov|name|edu|[a-zA-Z][a-zA-Z]))(:[0-9]+)?((\/|\?)[^ "]*[^,;\.:">)])?')
 
+spotify_uri_re = re.compile(r'(spotify:)(album|artist|track)([:\/])([a-zA-Z0-9]+)\/?')
+
 class parser(SGMLParser):
     def __init__(self, content_start_comment='', content_end_comment=''):
         SGMLParser.__init__(self)
@@ -38,19 +40,30 @@ class opener(FancyURLopener):
 
 def setup(self):
     self.repubhandlers.update({ url_re : urlhandler})
+    self.repubhandlers.update({ spotify_uri_re : spotify_uri})
     self.pubcommands['url'] = urlshow
     urlshow.url = "http://rosvosektori.wipsl.com/numero/#urls"
 
 def urlshow(self, e, c):
     c.privmsg(e.target(), "Net on netissä: %s"%(urlshow.url))
 
+def spotify_uri(self, e, c):
+    line = e.arguments()[0]
+    m = re.search(spotify_uri_re,line)
+    if m:
+        s_url = "http://open.spotify.com/%s/%s/"%(m.group(2),m.group(4))
+        run_once(0, _urlhandler, [self, e, c, s_url])
+    else:
+        return
+
 def urlhandler(self, e, c):
     run_once(0, _urlhandler, [self, e, c])
     
-def _urlhandler(self, e, c):
+def _urlhandler(self, e, c, line = ''):
 
-    line = e.arguments()[0]
-    
+    if not line:
+        line = e.arguments()[0]
+
     m = re.search(url_re,line)
     
     if not m:

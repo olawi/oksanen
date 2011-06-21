@@ -51,7 +51,7 @@ def spotify_uri(self, e, c):
     line = e.arguments()[0]
     m = re.search(spotify_uri_re,line)
     if m:
-        s_url = "http://open.spotify.com/%s/%s/"%(m.group(2),m.group(4))
+        s_url = "http://open.spotify.com/%s/%s"%(m.group(2),m.group(4))
         run_once(0, _urlhandler, [self, e, c, s_url])
     else:
         return

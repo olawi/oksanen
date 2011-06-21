@@ -228,7 +228,7 @@ def saa(self,e,c):
         saa.timelast = saa.timenow
         return
 
-    if location == 'minmax':
+    if location == 'minmax' or location == 'maxmin':
         '''Get all temperatures from tiehallinto...'''
         all_urls = get_tieh_urls(self)
         all_wdata = {}

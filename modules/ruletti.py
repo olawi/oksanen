@@ -18,7 +18,9 @@ def setup(self):
 
 def ruletti_unban(self, e, c):
     nick = nm_to_n(e.source())
-    """nothing here yet"""
+    c.mode(e.target(), "-b %s"%e.source())
+    c.invite(nick, e.target())
+    c.privmsg(e.source(),"tuu takasi, kengät kuluu")
     
 def ruletti(self, e, c):
 
@@ -30,7 +32,7 @@ def ruletti(self, e, c):
     if not nick in ruletti.shooters :
         ruletti.shooters[nick] = time.time()
     else:
-        if (time.time() - ruletti.shooters[nick]) < ruletti_wait :
+        if (time.time() - ruletti.shooters[nick]) < random.randint(60,ruletti_wait) :
             if not nick in ruletti.warnings or ruletti.warnings[nick] == 0 :
                 c.privmsg(e.target(),"%s, odotahan vielä, muutkin haluavat kuolla."%nick)
                 ruletti.warnings[nick] = 1
@@ -43,9 +45,12 @@ def ruletti(self, e, c):
             
 
     r = random.randint(1,6)
+    print e.source()
+
     if r == 1:
         c.kick(e.target(), nick, "*BANG*")
-        self.cron.add_event({'count':1}, ruletti_unban, self, e, c)
+        c.mode(e.target(), "+b %s"%e.source())
+        self.cron.add_event({'count':1,'minute':[random.randint(0,59)]}, ruletti_unban, self, e, c)
     else:
         c.privmsg(e.target(),"%s, *click*"%nick)  
     

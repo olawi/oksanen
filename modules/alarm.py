@@ -33,7 +33,7 @@ def help(self, e, c):
         cmd = re.findall('^!([\wäöÄÖ]+)',e.arguments()[0])[0]
     except:
         cmd = 'herätys'
-    s = "Käytetään esim: !%s 23:50 herätä minut"%cmd
+    s = "Käytetään esim: !%s 19:30 ota pizza uunista"%cmd
     c.privmsg(e.target(), s)
 
 def alarm_callback(self, e, c, alarm_string='HERÄTYS!'):
@@ -44,6 +44,7 @@ def alarm(self, e, c):
     """ parse time and wakeup string """
     line = e.arguments()[0]
     params = line.split()[1:]
+    nick = nm_to_n(e.source())
 
     if len(params):
         a_time = params[0]
@@ -63,6 +64,9 @@ def alarm(self, e, c):
         w_string = string.join(params[1:],' ')
     else:
         w_string = "herätys!"
+
+    """ notify nick """
+    c.notice(nick, "herätys asetettu %s:%s"%(a_hour,a_mins))
 
     """ set the alarm callback """
     tmp = self.cron.add_event({'count':1, 'hour':[a_hour], 'minute':[a_mins]}, alarm_callback, self, e, c, w_string)

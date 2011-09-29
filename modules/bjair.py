@@ -60,9 +60,7 @@ class bjair_parser(htmllib.HTMLParser):
 
 def setup(self):
     """setup called by oksanen on startup"""
-
-    self.privcommands['bjair'] = bjair_privcmd
-    self.pubcommands['bjair'] = bjair_pubcmd
+    self.pubcommands['bjair'] = bjair
 
 def terminate(self):
     """save data. called by oksanen.reset and .reload"""
@@ -74,6 +72,12 @@ def help(self):
 
 def bjair(self, e, c):
     """module main"""
+    line = e.arguments()[0]
+
+    showlong = False
+    if len(line.split()[1:]) > 0:
+        showlong = True
+
     fd = urllib.urlopen(bjair_url)
     page = fd.read()
     fd.close
@@ -89,16 +93,10 @@ def bjair(self, e, c):
     if m:
         aqi = m.group(0)
 
-    c.privmsg(e.target(),aqi)
+    output = aqi
+    if showlong:
+        output += " - %s: %s"%(p.status, p.meaning)
 
-
-def bjair_privcmd(self, e, c):
-    """privcommand bjair"""
-    bjair(self,e,c)
-
-def bjair_pubcmd(self, e, c):
-    """pubcommand bjair"""
-    bjair(self,e,c)
-
+    c.privmsg(e.target(), output)
 
 

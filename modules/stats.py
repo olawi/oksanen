@@ -70,7 +70,7 @@ def setup(self):
     stats.nicks = []
     stats.channel = self.channel
     self.pubcommands['stats'] = statshow
-    statshow.url = "http://rosvosektori.wipsl.com/numero/#stats"
+    statshow.url = "http://rosvosektori.dyndns.info/numero/#stats"
 
 def statshow(self, e, c):
     nick = nm_to_n(e.source())

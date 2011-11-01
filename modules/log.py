@@ -7,7 +7,7 @@ import string
 
 def setup(self):
     self.pubcommands['log'] = log
-    log.url = "http://rosvosektori.wipsl.com/numero/#logs"
+    log.url = "http://rosvosektori.dyndns.info/numero/#logs"
     log.cron_id = self.cron.add_event({'minute':[1]}, checklogscores, self)
 	
 def terminate(self):

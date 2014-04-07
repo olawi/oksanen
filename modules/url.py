@@ -42,7 +42,7 @@ def setup(self):
     self.repubhandlers.update({ url_re : urlhandler})
     self.repubhandlers.update({ spotify_uri_re : spotify_uri})
     self.pubcommands['url'] = urlshow
-    urlshow.url = "http://rosvosektori.dyndns.info/numero/#urls"
+    urlshow.url = "(eipäs olekkaan vielä!)"
 
 def urlshow(self, e, c):
     c.privmsg(e.target(), "Net on netissä: %s"%(urlshow.url))

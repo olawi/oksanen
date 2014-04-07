@@ -70,7 +70,7 @@ def setup(self):
     stats.nicks = []
     stats.channel = self.channel
     self.pubcommands['stats'] = statshow
-    statshow.url = "http://rosvosektori.dyndns.info/numero/#stats"
+    statshow.url = "(missing shit)"
 
 def statshow(self, e, c):
     nick = nm_to_n(e.source())
@@ -162,6 +162,9 @@ def stats_mode(self, e, c):
             if whosets in stats.nicks:
                 cursor.execute("UPDATE user SET banned = banned + 1 WHERE user = %s;",
                                [whosets])
+            if whogets in stats.nicks:
+                cursor.execute("UPDATE user SET wasbanned = wasbanned + 1 WHERE user = %s;",
+                               [whogets])
         
 def stats_kick(self, e, c):
     nick = e.arguments()[0]

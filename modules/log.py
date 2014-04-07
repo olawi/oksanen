@@ -7,7 +7,7 @@ import string
 
 def setup(self):
     self.pubcommands['log'] = log
-    log.url = "http://rosvosektori.dyndns.info/numero/#logs"
+    log.url = "(eipäs olekkaan!)"
     log.cron_id = self.cron.add_event({'minute':[1]}, checklogscores, self)
 	
 def terminate(self):
@@ -49,7 +49,8 @@ def log(self, e, c):
         
             cursor.execute(command, [nick, target] )
         
-            c.privmsg(e.target(), "Logissa on. Äänestä osoitteessa: "+log.url)
+            #c.privmsg(e.target(), "Logissa on. Äänestä osoitteessa: "+log.url)
+            c.privmsg(e.target(), "Logissa on.")
         else:
             command = """SELECT USER, ENTRY, SCORE FROM log WHERE `ID`=%s;"""
 

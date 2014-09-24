@@ -32,7 +32,7 @@ def ask_question(self, qtype='musavisa'):
     channel = self.channel
     visa.cron_id[qtype] = self.cron.add_event({'count':1,'hour':[random.randint(0,23)],'minute':[random.randint(0,59)]}, ask_question, self, qtype)
     cursor = self.db.cursor()
-    sqlquery = "SELECT * FROM %s ORDER BY RAND() LIMIT 1;"%qtype
+    sqlquery = "SELECT id, user, question, answer, date FROM %s ORDER BY RAND() LIMIT 1;"%qtype
     cursor.execute(sqlquery, [] )
     id, user, question, answer, date = cursor.fetchone()
     if qtype == 'musavisa':

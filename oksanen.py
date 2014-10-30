@@ -41,9 +41,9 @@ def debug(text):
         print text
 
 def is_admin(source):
-    if nm_to_uh(source) in ["~antti@193.65.182.140",
-                            "~ppietari@tuomi.oulu.fi",
-                            "m7kejo00@rhea.oamk.fi"]:
+    if nm_to_uh(source) in ["~paavo@37.16.98.3",
+                            "Erppa@shell.jkry.fi",
+                            "evatanen@shell.jkry.fi"]:
         return True
     else:
         return False

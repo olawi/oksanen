@@ -47,9 +47,9 @@ def timediff(first,second):
     output = ""
     if (timedelta.days > 0):
         if (timedelta.days > 1):
-            output += "%s p‰iv‰‰ ja " %(timedelta.days)
+            output += "%s p√§iv√§√§ ja " %(timedelta.days)
         else:
-            output += "yhden p‰iv‰n ja "
+            output += "yhden p√§iv√§n ja "
 
     output += seconds_to_string(timedelta.seconds)
 
@@ -67,6 +67,7 @@ def setup(self):
     self.quithandlers.append(stats_part)
     self.modehandlers.append(stats_mode)
     self.kickhandlers.append(stats_kick)
+    stats.lines_this_session = 0
     stats.nicks = []
     stats.channel = self.channel
     self.pubcommands['stats'] = statshow
@@ -88,17 +89,17 @@ def statshow(self, e, c):
                 cursor.execute(command, [ str(target) ] )
                 user, said, words, kicked, banned, waskicked, wasbanned, joins, parts, join_date, part_date, averagetime, firstseen = cursor.fetchone()
 
-                output = "Stats (%s) - Rivej‰: %s, sanoja: %s, " %(target,said,words)
+                output = "Stats (%s) - Rivej√§: %s, sanoja: %s, " %(target,said,words)
                 output += "potkittu/potki: %s/%s, " %(waskicked,kicked)
-                output += "b‰nnitty/b‰nn‰s: %s/%s, " %(wasbanned,banned)
+                output += "b√§nnitty/b√§nn√§s: %s/%s, " %(wasbanned,banned)
                 output += "joins/parts: %s/%s, " %(joins,parts)
-                output += "keskim‰‰rin kanavalla: %s, " %(seconds_to_string(averagetime))
+                output += "keskim√§√§rin kanavalla: %s, " %(seconds_to_string(averagetime))
                 output += "eka kerta: %s sitten." %(timediff(firstseen,datetime.datetime.now()))
                 c.privmsg(e.target(), output)
             else:
-                c.privmsg(e.target(), "%s: Ei lˆyvy tommosta!"%(nick))
+                c.privmsg(e.target(), "%s: Ei l√∂yvy tommosta!"%(nick))
     else:
-        c.privmsg(e.target(), "Ne on netiss‰: %s"%(statshow.url))
+        c.privmsg(e.target(), "Ne on netiss√§: %s"%(statshow.url))
 
 def stats_join(self,e,c):
     if hasSql:
@@ -117,8 +118,8 @@ def stats_join(self,e,c):
             said, joins, join_date, averagetime, part_date = cursor.fetchone()
             if (joins > 1):
                 output = "Tervetuloa %s! Olit viimeksi kanavalla %s" %(nick,timediff(join_date,part_date))
-                output += " - keskim‰‰rin olet ollut %s" %(seconds_to_string(averagetime))
-                output += " | %s rivi‰ per kerta." %(said/joins)
+                output += " - keskim√§√§rin olet ollut %s" %(seconds_to_string(averagetime))
+                output += " | %s rivi√§ per kerta." %(said/joins)
                 c.privmsg(nick, output)"""
         cursor.execute("UPDATE user SET joins = joins + 1, join_date = NOW() WHERE user = %s;", [nick])
         cursor.close()
@@ -179,6 +180,8 @@ def stats_kick(self, e, c):
         cursor.close()
     
 def stats(self, e, c):
+    stats.lines_this_session += 1;
+
     if hasSql:
 
         cursor = self.db.cursor()

@@ -64,13 +64,13 @@ def musavisa_print(self,e,c):
     if (musavisa.question != ""):
         c.privmsg(e.target(), "Musavisa: %s" %(musavisa.question))
     else:
-        c.privmsg(e.target(), "Musavisa ei ole juuri nyt k‰ynniss‰. Lis‰‰ uusi kysymys: /msg Oksanen !musavisa vastaus|kysymys")
+        c.privmsg(e.target(), "Musavisa ei ole juuri nyt k√§ynniss√§. Lis√§√§ uusi kysymys: /msg Oksanen !musavisa vastaus|kysymys")
         
 def leffavisa_print(self,e,c):
     if (leffavisa.question != ""):
         c.privmsg(e.target(), "Leffavisa: %s" %(leffavisa.question))
     else:
-        c.privmsg(e.target(), "Leffavisa ei ole juuri nyt k‰ynniss‰. Lis‰‰ uusi kysymys: /msg Oksanen !leffavisa vastaus|kysymys")
+        c.privmsg(e.target(), "Leffavisa ei ole juuri nyt k√§ynniss√§. Lis√§√§ uusi kysymys: /msg Oksanen !leffavisa vastaus|kysymys")
     
 def check_question(self,e,c):
     nick = nm_to_n(e.source())
@@ -88,7 +88,7 @@ def check_question(self,e,c):
             row = cursor.fetchone()
             print sqlquery
             print row[0],row[1]
-            c.privmsg(e.target(), "%s, oikein meni! Sinulla on nyt %s pistett‰. Leffavisassa sijalla %s" % (nick, row[0], row[1]))
+            c.privmsg(e.target(), "%s, oikein meni! Sinulla on nyt %s pistett√§. Leffavisassa sijalla %s" % (nick, row[0], row[1]))
             cursor.close()
             leffavisa.question = ""
             return
@@ -104,7 +104,7 @@ def check_question(self,e,c):
             sqlquery = """SELECT musavisa,rank FROM (SELECT @rownum := @rownum+1 AS rank, musavisa, user FROM gamescores ORDER BY musavisa DESC) AS derived_table WHERE user=%s;"""
             cursor.execute(sqlquery, [nick])
             row = cursor.fetchone()
-            c.privmsg(e.target(), "%s, oikein meni! Sinulla on nyt %s pistett‰. Musavisassa sijalla %s" % (nick, row[0], row[1]))
+            c.privmsg(e.target(), "%s, oikein meni! Sinulla on nyt %s pistett√§. Musavisassa sijalla %s" % (nick, row[0], row[1]))
             cursor.close()
             musavisa.question = ""
             return
@@ -112,10 +112,10 @@ def check_question(self,e,c):
 def add_question(self,e,c,type):
     nick = nm_to_n(e.source())
     if (type == 0 and musavisa.question != ""):
-        c.privmsg(nick, "Ratkaise ensin kyss‰ri:%s" %(musavisa.question))
+        c.privmsg(nick, "Ratkaise ensin kyss√§ri:%s" %(musavisa.question))
         return
     elif (type == 1 and leffavisa.question != ""):
-        c.privmsg(nick, "Ratkaise ensin kyss‰ri:%s" %(leffavisa.question))
+        c.privmsg(nick, "Ratkaise ensin kyss√§ri:%s" %(leffavisa.question))
         return
 
     line = e.arguments()[0]

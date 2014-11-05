@@ -22,7 +22,7 @@ def setup(self):
 
 def get_censor_list(self):
     clist = []
-    cursor = self.db.query('SELECT user FROM user WHERE censor = 1')
+    cursor = self.db.query('SELECT user FROM users WHERE censor = 1')
     for row in cursor.fetchall():
         clist.append(row[0])
     cursor.close()
@@ -41,7 +41,7 @@ def censor_privcmd(self, e, c):
     line = e.arguments()[0]
     args = line.split()
 
-    cur = self.db.query('SELECT censor FROM user WHERE user = %s', [nick])
+    cur = self.db.query('SELECT censor FROM users WHERE user = %s', [nick])
     result = cur.fetchone()
     cur.close()
     if result:
@@ -60,7 +60,7 @@ def censor_privcmd(self, e, c):
         else:
             state = not state
             
-        cur = self.db.query('UPDATE user SET censor = %s WHERE user = %s', [int(state), nick])
+        cur = self.db.query('UPDATE users SET censor = %s WHERE user = %s', [int(state), nick])
         cur.close()
 
         censor.censored = get_censor_list(self)

@@ -56,7 +56,7 @@ def timediff(first,second):
     return output
 
 def load_nick_table(cursor):
-    cursor.execute("SELECT user FROM user")
+    cursor.execute("SELECT user FROM users")
     for row in cursor.fetchall():
         stats.nicks.append(row[0])
 
@@ -85,7 +85,7 @@ def statshow(self, e, c):
                 load_nick_table(cursor)
 
             if target in stats.nicks:
-                command = """SELECT user, said, words, kicked, banned, waskicked, wasbanned, joins, parts, join_date, part_date, averagetime, firstseen FROM user WHERE `user`=%s;"""
+                command = """SELECT user, said, words, kicked, banned, waskicked, wasbanned, joins, parts, join_date, part_date, averagetime, firstseen FROM users WHERE `user`=%s;"""
                 cursor.execute(command, [ str(target) ] )
                 user, said, words, kicked, banned, waskicked, wasbanned, joins, parts, join_date, part_date, averagetime, firstseen = cursor.fetchone()
 
@@ -110,7 +110,7 @@ def stats_join(self,e,c):
         nick = nm_to_n(e.source())
 
         if not nick in stats.nicks:
-            cursor.execute("INSERT INTO user (user,firstseen) VALUES(%s,NOW());", [nick])
+            cursor.execute("INSERT INTO users (user,firstseen) VALUES(%s,NOW());", [nick])
             stats.nicks.append(nick)
         """
         else:
@@ -121,7 +121,7 @@ def stats_join(self,e,c):
                 output += " - keskimäärin olet ollut %s" %(seconds_to_string(averagetime))
                 output += " | %s riviä per kerta." %(said/joins)
                 c.privmsg(nick, output)"""
-        cursor.execute("UPDATE user SET joins = joins + 1, join_date = NOW() WHERE user = %s;", [nick])
+        cursor.execute("UPDATE users SET joins = joins + 1, join_date = NOW() WHERE user = %s;", [nick])
         cursor.close()
 
 def stats_part(self,e,c):
@@ -135,14 +135,14 @@ def stats_part(self,e,c):
         if not nick in stats.nicks:
             return
 
-        cursor.execute("SELECT joins, join_date, averagetime, NOW() from user WHERE user = %s;", [nick])
+        cursor.execute("SELECT joins, join_date, averagetime, NOW() from users WHERE user = %s;", [nick])
         joins, join_date, averagetime, time_now = cursor.fetchone()
 
         timedelta = time_now-join_date
         timeonchannel = timedelta.seconds + (timedelta.days*86400)
         averagetime = (((joins-1)*averagetime)+timeonchannel)/joins
         
-        cursor.execute("UPDATE user SET averagetime = %s, parts = parts + 1, part_date = NOW() WHERE user = %s;", [averagetime,nick])
+        cursor.execute("UPDATE users SET averagetime = %s, parts = parts + 1, part_date = NOW() WHERE user = %s;", [averagetime,nick])
 
         cursor.close()        
 
@@ -161,7 +161,7 @@ def stats_mode(self, e, c):
             if stats.nicks == []:
                 load_nick_table(cursor)
             if whosets in stats.nicks:
-                cursor.execute("UPDATE user SET banned = banned + 1 WHERE user = %s;",
+                cursor.execute("UPDATE users SET banned = banned + 1 WHERE user = %s;",
                                [whosets])
         
 def stats_kick(self, e, c):
@@ -174,9 +174,9 @@ def stats_kick(self, e, c):
         if stats.nicks == []:
             load_nick_table(cursor)
         if whokicked in stats.nicks:
-            cursor.execute("UPDATE user SET kicked = kicked + 1 WHERE user = %s;", [whokicked])
+            cursor.execute("UPDATE users SET kicked = kicked + 1 WHERE user = %s;", [whokicked])
         if nick in stats.nicks:
-            cursor.execute("UPDATE user SET waskicked = waskicked + 1 WHERE user = %s;", [nick])
+            cursor.execute("UPDATE users SET waskicked = waskicked + 1 WHERE user = %s;", [nick])
         cursor.close()
     
 def stats(self, e, c):
@@ -191,12 +191,12 @@ def stats(self, e, c):
         nick = nm_to_n(e.source())
 
         if not nick in stats.nicks:
-            cursor.execute("INSERT INTO user (user,joins,firstseen) VALUES(%s,1,NOW());", [nick])
+            cursor.execute("INSERT INTO users (user,joins,firstseen) VALUES(%s,1,NOW());", [nick])
             stats.nicks.append(nick)
         
         line = e.arguments()[0]
         wordcount = len(line.split())
         currenthour = int(strftime("%H",localtime()))
-        cursor.execute("UPDATE user SET said = said + 1, words = words + %s WHERE user = %s;", [wordcount,nick])
+        cursor.execute("UPDATE users SET said = said + 1, words = words + %s WHERE user = %s;", [wordcount,nick])
         cursor.execute("UPDATE hourstats SET said = said + 1, words = words + %s WHERE hour = %s;", [wordcount,currenthour])
         cursor.close()

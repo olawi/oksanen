@@ -63,7 +63,7 @@ wordgame_wordlist = ['ffffFFFYSSSTTPPFFFT', 'pieru', 'penis', 'maksa',
                      'pneotkas', 'pernu', 'hevimaanantai',
                      u'housebändi', u'päivähoito', 'ibo', 'zivago',
                      'kortsuautomaatti', 'rotos', 'fajitaperjantai',
-                     'saippua-annostelija', 'käsienkuivain',
+                     'saippua-annostelija', u'käsienkuivain',
                      'remakka']
 
 

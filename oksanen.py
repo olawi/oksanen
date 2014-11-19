@@ -22,6 +22,7 @@ from irclib import nm_to_n, nm_to_h, nm_to_uh, irc_lower, ip_numstr_to_quad, ip_
 import ircutil
 
 import sys, imp
+import git
 import thread
 import threading
 import traceback
@@ -423,6 +424,13 @@ class Oksanen(SingleServerIRCBot):
             self.reset_db()
             c.notice(nick, cmd)
                         
+        elif cmd == "update":
+            print >> sys.stderr, "cmd: UPDATE source from git"
+            g = git.cmd.Git(home)
+            gout = g.pull
+            c.notice(nick, cmd)
+            c.notice(nick, gout)
+
         elif cmd.startswith("raw "):
             print >> sys.stderr, "cmd: %s"%cmd
             s = re.sub('^raw ','',cmd)

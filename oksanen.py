@@ -427,9 +427,8 @@ class Oksanen(SingleServerIRCBot):
         elif cmd == "update":
             print >> sys.stderr, "cmd: UPDATE source from git"
             g = git.cmd.Git(home)
-            gout = g.pull
+            g.pull
             c.notice(nick, cmd)
-            c.notice(nick, gout)
 
         elif cmd.startswith("raw "):
             print >> sys.stderr, "cmd: %s"%cmd

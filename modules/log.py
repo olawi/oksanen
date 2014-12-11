@@ -7,7 +7,7 @@ import string
 
 def setup(self):
     self.pubcommands['log'] = log
-    log.url = "(eipäs olekkaan!)"
+    log.url = "http://oksanen.servebeer.com/logs"
     log.cron_id = self.cron.add_event({'minute':[1]}, checklogscores, self)
 	
 def terminate(self):

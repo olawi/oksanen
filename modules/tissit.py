@@ -10,7 +10,7 @@ from irclib import nm_to_n
 DEBUG = 1
 
 tissit_url = 'http://%s.kiinnostaa.org/'
-tissit_cmdlist = ['tissit', 'pillu', 'perse', 'pano', 'lesbot', 'suihinotto']
+tissit_cmdlist = ['tissit', 'pillu', 'perse', 'pano', 'lesbot', 'suihinotto', 'softcore', 'vintage']
 
 def setup(self):
     for cmd in tissit_cmdlist:

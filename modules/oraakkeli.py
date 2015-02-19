@@ -16,16 +16,20 @@ def setup(self):
 def oraakkeli(self,e,c):
 
     line = e.arguments()[0]
+    nick = nm_to_n(e.source())
+    
     query = string.join(line.split()[1:], " ")
     
+    if not len(query):
+        c.privmsg(e.target(), "%s, mitä vittua nää yrität?"%(nick))
+        return
+
     # lintukoto expects latin-1
     query = ircutil.recode(query,'latin-1')
     
     fd = urllib.urlopen("%s%s"%(oraakkeli_url,query))
     reply = fd.read()
     fd.close
-    
-    nick = nm_to_n(e.source())
     
     c = self.connection
     c.privmsg(e.target(), "%s, %s"%(nick,reply))

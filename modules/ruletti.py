@@ -3,6 +3,7 @@
 
 import random
 import time
+import numpy
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
@@ -50,7 +51,9 @@ def ruletti(self, e, c):
     if r == 1:
         c.kick(e.target(), nick, "*BANG*")
         c.mode(e.target(), "+b %s"%e.source())
-        self.cron.add_event({'count':1,'minute':[random.randint(0,59)]}, ruletti_unban, self, e, c)
+        d_mins = numpy.round(numpy.random.standard_gamma(1)*30)
+        t_kick = datetime.now() + timedelta (minutes = r_minutes)
+        self.cron.add_event({'count':1, 'hour':[t_kick.hour], 'minute':[t_kick.mins]}, ruletti_unban, self, e, c)
     else:
         c.privmsg(e.target(),"%s, *click*"%nick)  
     

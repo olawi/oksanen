@@ -52,7 +52,7 @@ def ruletti(self, e, c):
         c.kick(e.target(), nick, "*BANG*")
         c.mode(e.target(), "+b %s"%e.source())
         d_mins = numpy.round(numpy.random.standard_gamma(1)*30)
-        t_kick = datetime.now() + timedelta (minutes = r_minutes)
+        t_kick = datetime.now() + timedelta (minutes = d_mins)
         self.cron.add_event({'count':1, 'hour':[t_kick.hour], 'minute':[t_kick.mins]}, ruletti_unban, self, e, c)
     else:
         c.privmsg(e.target(),"%s, *click*"%nick)  

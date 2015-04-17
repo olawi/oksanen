@@ -47,7 +47,7 @@ kaanna_notsupported = ["venäjä", "bulgaria", "kreikka", "japani", "kiina"]
 
 kaanna_usage = "käytetään esim. että !käännä englanti-suomi dictionary ";
 
-kaanna_url = "http://ilmainensanakirja.fi/sanakirja_"
+kaanna_url = "http://ilmainensanakirja.fi/"
 
 class parser(htmllib.HTMLParser):
 

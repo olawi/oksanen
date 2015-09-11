@@ -2,3 +2,7 @@
 *.bak
 *.*~
 *.*#
+.mysqlpw
+project.xml
+project.properties
+/nbproject/private/

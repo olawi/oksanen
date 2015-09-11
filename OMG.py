@@ -5,6 +5,10 @@
 OMG stands for Oksanen Module Generale
 It is a general template to use as a module.
 M-x replace-string <RET> OMG <RET> newmodule <RET>
+
+Arguments to passed to functions below:
+    e - instance of Event from irclib.py
+    c - instance of ServerConnection from irclib.py
 """
 
 import string

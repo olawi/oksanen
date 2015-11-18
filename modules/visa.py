@@ -7,7 +7,7 @@ import string
 import ircutil
 import random
 
-from oksanen import hasSql, is_admin
+from oksanen import hasSql
 
 def setup(self):
     self.pubhandlers.append(check_question)
@@ -145,7 +145,7 @@ def add_question(self,e,c,type):
 
 def visa(self,e,c):
     '''admin-like, force question'''
-    if not is_admin(e.source()):
+    if not self.is_admin(e.source()):
         return
 
     line = e.arguments()[0]

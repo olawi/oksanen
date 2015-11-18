@@ -42,10 +42,11 @@ def setup(self):
     self.repubhandlers.update({ url_re : urlhandler})
     self.repubhandlers.update({ spotify_uri_re : spotify_uri})
     self.pubcommands['url'] = urlshow
-    urlshow.url = "(eipäs olekkaan vielä!)"
+    urlshow.url = "http://harpokrates.ddns.net/oksanen/urls"
 
 def urlshow(self, e, c):
-    c.privmsg(e.target(), "Net on netissä: %s"%(urlshow.url))
+    c.privmsg(e.target(), "Sori, ei tänään.")
+    #c.privmsg(e.target(), "Net on netissä: %s"%(urlshow.url))
 
 def spotify_uri(self, e, c):
     line = e.arguments()[0]

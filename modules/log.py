@@ -7,7 +7,7 @@ import string
 
 def setup(self):
     self.pubcommands['log'] = log
-    log.url = "http://oksanen.servebeer.com/logs"
+    log.url = "http://harpokrates.ddns.net/oksanen/logs"
     log.cron_id = self.cron.add_event({'minute':[1]}, checklogscores, self)
 	
 def terminate(self):

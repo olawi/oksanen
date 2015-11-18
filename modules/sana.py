@@ -8,7 +8,7 @@ import string
 import random
 import array
 from sanalista import wordgame_wordlist
-from oksanen import hasSql, is_admin
+from oksanen import hasSql
 
 def setup(self):
     self.pubcommands['sana'] = kysysana
@@ -36,7 +36,7 @@ def kysysana(self, e, c):
     line = e.arguments()[0]
     new_word = string.join(line.split()[1:], " ")
 
-    if (not is_channel(e.target()) and is_admin(e.source())):
+    if (not is_channel(e.target()) and self.is_admin(e.source())):
         # for admins in /query
         if (len(new_word) > 0):
             sana.current_word = unicode(new_word, 'utf-8')

@@ -41,14 +41,6 @@ def debug(text):
     if DEBUG:
         print text
 
-def is_admin(source):
-    if nm_to_uh(source) in ["~paavo@37.16.98.3",
-                            "Erppa@shell.jkry.fi",
-                            "evatanen@shell.jkry.fi"]:
-        return True
-    else:
-        return False
-
 class OhMySQLdb():
     """Wraps the SQL functionality with connection checking"""
     conn = None
@@ -222,6 +214,16 @@ class Oksanen(SingleServerIRCBot):
             print >> sys.stderr, '\033[33mRegistered modules:\033[m', ', '.join(modulenames)
         else: 
             print >> sys.stderr, "Warning: Couldn't find any modules"
+
+    def is_admin(self, source):
+        try:
+            if source in self.moduledata['login']:
+                return True
+            else:
+                return False
+        except Exception, ex:
+            print "\033[31mERROR\033[m : login data not initialized: %s"%ex
+            return False
 
     def on_minute(self):
         current_time = datetime.datetime.today()
@@ -402,11 +404,11 @@ class Oksanen(SingleServerIRCBot):
                 ircutil.run_once(0, func, [self, e, c])
                 return
             except Exception, ex:
-                print "\033[31mERROR\033[m (do_command): %s"%ex
+                print "%s attempting (do_command): %s"%(nick, ex)
                 if DEBUG > 1: traceback.print_stack()
                 
         """The rest is admin shit"""
-        if not is_admin(e.source()):
+        if not self.is_admin(e.source()):
             return
         
         if cmd == "reset":

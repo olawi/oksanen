@@ -3,6 +3,7 @@
 *.*~
 *.*#
 .mysqlpw
+.apasswd
 project.xml
 project.properties
 /nbproject/private/

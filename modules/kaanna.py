@@ -81,12 +81,16 @@ class parser(htmllib.HTMLParser):
                 self.output += "%s: "%text
 
     def start_a(self,attrs):
+        if ("class", "morex") in attrs:
+            self.state = 3
         if self.state == 2:
             self.save_bgn()
 
     def end_a(self):
         if self.state == 2:
             self.output += "%s, "%self.save_end()
+        if self.state == 3:
+            self.state = 2
 
 def setup(self):
     self.pubcommands['käännä'] = kaanna

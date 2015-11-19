@@ -7,7 +7,6 @@ import htmllib
 import formatter
 import re
 
-from ircbot import SingleServerIRCBot
 from irclib import nm_to_n
 
 kaanna_kielet = [ 
@@ -47,7 +46,7 @@ kaanna_usage = "käytetään esim. että !käännä englanti-suomi fuck";
 
 kaanna_url = "http://ilmainensanakirja.fi/"
 
-class parser(htmllib.HTMLParser):
+class Parser(htmllib.HTMLParser):
 
     def __init__(self, verbose=0):
         self.state = 0
@@ -56,16 +55,12 @@ class parser(htmllib.HTMLParser):
         htmllib.HTMLParser.__init__(self, f, verbose)
 
     def start_div(self,attrs):
-        for i in attrs:
-            if i==("id", "cont"):
-                self.state = 1
-                return
-            elif i==("class","word"):
-                self.state = 2
-                return
-
-    def end_div(self):
-        self.state = 0
+        if ("id", "cont") in attrs:
+            self.state = 1
+            return
+        if ("class","word") in attrs:
+            self.state = 2
+            return
 
     def end_div(self):
         self.state = 0
@@ -91,6 +86,16 @@ class parser(htmllib.HTMLParser):
             self.output += "%s, "%self.save_end()
         if self.state == 3:
             self.state = 2
+            
+    def start_small(self, attrs):
+        if self.state == 2:
+            self.output += "%s (" % self.save_end()
+            self.save_bgn()
+            
+    def end_small(self):
+        if self.state == 2:
+            self.output += "%s)" % self.save_end()
+            self.save_bgn()
 
 def setup(self):
     self.pubcommands['käännä'] = kaanna
@@ -103,7 +108,7 @@ def get_result(query):
     page = fd.read()
     fd.close
 
-    p = parser()
+    p = Parser()
     p.feed(page)
 
     ans = re.sub("\s*?&.*?;","",p.output)

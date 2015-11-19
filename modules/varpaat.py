@@ -19,7 +19,6 @@ def terminate(self):
 
 def varpaat_pubcmd(self, e, c):
     """pubcommand varpaat"""
-    #req = urllib2.Request(starturl, datagen, headers)
     req = 'http://pefeet.tumblr.com/random'
     res = urllib2.urlopen(req)
     finalurl = res.geturl()

@@ -5,12 +5,10 @@ import urllib
 import htmllib
 
 import formatter
-import string
 import re
-import sys
 
 from ircbot import SingleServerIRCBot
-from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad
+from irclib import nm_to_n
 
 kaanna_kielet = [ 
     "suomi",
@@ -59,27 +57,24 @@ class parser(htmllib.HTMLParser):
 
     def start_div(self,attrs):
         for i in attrs:
-            if i==("id", "contentText"):
+            if i==("id", "cont"):
                 self.state = 1
+                return
+            elif i==("class","word"):
+                self.state = 2
                 return
 
     def end_div(self):
         self.state = 0
 
-    def start_table(self,attrs):
-        for i in attrs:
-            if i==("id", "searchResultsTable"):
-                self.state = 2
-                return
-
-    def end_table(self):
+    def end_div(self):
         self.state = 0
 
-    def start_h2(self,attrs):
+    def start_h3(self,attrs):
         if self.state == 1:
             self.save_bgn()
 
-    def end_h2(self):
+    def end_h3(self):
         if self.state == 1:
             self.output += "%s: "%self.save_end()
 
@@ -136,7 +131,8 @@ def kaanna(self,e,c):
     p.feed(page)
 
     c = self.connection
-    answart = re.sub(",\s?$",".",p.output)
+    answart = re.sub("\s*?&.*?;","",p.output)
+    answart = re.sub("\,\s*$",".",answart)
     c.privmsg(e.target(), answart)
 
 

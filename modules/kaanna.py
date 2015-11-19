@@ -43,7 +43,7 @@ kaanna_kielet = [
 
 kaanna_notsupported = ["venäjä", "bulgaria", "kreikka", "japani", "kiina"] 
 
-kaanna_usage = "käytetään esim. että !käännä englanti-suomi dictionary ";
+kaanna_usage = "käytetään esim. että !käännä englanti-suomi fuck";
 
 kaanna_url = "http://ilmainensanakirja.fi/"
 
@@ -76,7 +76,9 @@ class parser(htmllib.HTMLParser):
 
     def end_h3(self):
         if self.state == 1:
-            self.output += "%s: "%self.save_end()
+            text = self.save_end()
+            if len(text) > 0:
+                self.output += "%s: "%text
 
     def start_a(self,attrs):
         if self.state == 2:
@@ -89,6 +91,21 @@ class parser(htmllib.HTMLParser):
 def setup(self):
     self.pubcommands['käännä'] = kaanna
     self.pubcommands['kaanna'] = kaanna
+
+def get_result(query):
+    """ Fetches result using the parser, query must be preformatted:
+        fromlang-tolang/word """
+    fd = urllib.urlopen("%s%s"%(kaanna_url,query))
+    page = fd.read()
+    fd.close
+
+    p = parser()
+    p.feed(page)
+
+    ans = re.sub("\s*?&.*?;","",p.output)
+    ans = re.sub("\,\s*$",".",ans)
+    
+    return ans
 
 def kaanna(self,e,c):
 
@@ -112,8 +129,6 @@ def kaanna(self,e,c):
             c.privmsg(e.target(),"%s, %s"%(nm_to_n(e.source()),kaanna_usage))
             return
 
-    print "%s %s %s"%(lan1,lan2,word)
-
     if not (lan1 in kaanna_kielet and lan2 in kaanna_kielet) :
         c.privmsg(e.target(),"%s, sori vaan mutta en minä nyt ihan kaikkia kieliä osaa!"%nm_to_n(e.source()))
         return
@@ -123,16 +138,19 @@ def kaanna(self,e,c):
                   
     query = "%s-%s/%s"%(lan1,lan2,word)
     
-    fd = urllib.urlopen("%s%s"%(kaanna_url,query))
-    page = fd.read()
-    fd.close
+    answart = get_result(query)
 
-    p = parser()
-    p.feed(page)
+    if len(answart) < 1 and len(args) < 2:
+        """ Try the other way around in case of stupid user error """
+        query = "%s-%s/%s"%(lan2,lan1,word)
+        answart = get_result(query)
 
     c = self.connection
-    answart = re.sub("\s*?&.*?;","",p.output)
-    answart = re.sub("\,\s*$",".",answart)
-    c.privmsg(e.target(), answart)
+
+    if len(answart) > 0:
+        c.privmsg(e.target(), answart)
+    else:
+        c.privmsg(e.target(), "Ei löydy käännöstä %s-%s sanalle '%s'." % (lan1, lan2, word))
+    
 
 

@@ -78,7 +78,6 @@ def get_openweather(self, location):
     id = openweather_id
     
     reply = requests.get("%s%s&mode=%s&lang=%s&units=%s&APPID=%s" % (openweather_url, location, mode, lang, units, id))
-    print reply.text
     
     data = json.loads(reply.text)
     return data
@@ -98,7 +97,7 @@ def saa(self,e,c):
         showall = True
 
     if len(line.split()[1:]) < 1:
-        location = 'willab'
+        location = 'Oulu'
     else:
         location = string.lower("%s"%line.split()[1])
 

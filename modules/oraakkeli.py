@@ -44,6 +44,9 @@ def oraakkeli(self,e,c):
     reply = fd.read()
     fd.close
     
+    if reply.startswith('<'):
+        reply = "nyt en kuule jouda vastaamaan."
+    
     c = self.connection
     c.privmsg(e.target(), "%s, %s"%(nick,reply))
 

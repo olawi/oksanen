@@ -47,7 +47,7 @@ def kaanna(self,e,c):
     c = self.connection
 
     if len(results) > 0:
-        c.privmsg(e.target(), "%s-%s käännös sanalle '%s': %s" % (lan1, lan2, word, reply)
+        c.privmsg(e.target(), "%s-%s käännös sanalle '%s': %s" % (lan1, lan2, word, reply))
     else:
         c.privmsg(e.target(), "Ei löydy käännöstä %s-%s sanalle '%s'." % (lan1, lan2, word))
     

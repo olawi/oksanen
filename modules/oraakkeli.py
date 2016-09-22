@@ -28,7 +28,7 @@ def oraakkeli(self,e,c):
         return
 
     # lintukoto expects latin-1
-    query = ircutil.recode(query,'latin-1')
+    #query = ircutil.recode(query,'latin-1')
     
     opr = opener()
     

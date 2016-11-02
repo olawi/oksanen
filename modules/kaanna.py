@@ -42,7 +42,7 @@ def kaanna(self,e,c):
     tree = html.fromstring(page.content)
     results = tree.xpath('//*[@id="main"]/div[1]/div[1]/div[1]/div[1]/p[1]/a/text()')
     
-    reply = ', '.join(results)
+    reply = ', '.join(results).encode('utf-8').strip()
     
     c = self.connection
 
